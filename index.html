@@ -2,249 +2,418 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Is El Paso's housing stock filtering? A tract-level diagnosis</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Is El Paso's housing actually getting more affordable as it ages?</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
 <style>
 :root{
-  --paper:#F7F5EF;
-  --ink:#20282B;
-  --ink-soft:#565F5A;
-  --line:#DAD6C8;
-  --teal:#2C6072;
-  --teal-deep:#123A47;
-  --ochre:#B9822E;
-  --ochre-deep:#7A5218;
-  --brick:#A34432;
-  --brick-deep:#6E2C1F;
-  --card:#FFFFFF;
+  --bg:#FAFAF6; --ink:#14151A; --ink-soft:#514F5C;
+  --coral:#FF5A5F; --coral-deep:#B8272C;
+  --gold:#FFC53D; --gold-deep:#8A5A00;
+  --teal:#12A594; --teal-deep:#0B4F47;
+  --violet:#5B4FE9; --violet-deep:#2E2478;
+  --navy:#14152E; --line:#E4E1D6;
 }
 *{box-sizing:border-box;}
-body{
-  margin:0; background:var(--paper); color:var(--ink);
-  font-family:'Inter',sans-serif; font-size:16px; line-height:1.7;
-}
-h1,h2,h3{font-family:'Source Serif 4',serif; font-weight:600; margin:0 0 .4em;}
+html{scroll-behavior:smooth;}
+body{margin:0; background:var(--bg); color:var(--ink); font-family:'Space Grotesk',sans-serif; font-size:18px; line-height:1.65;}
+h1,h2,h3{font-family:'Archivo Black',sans-serif; font-weight:400; line-height:1.05; margin:0;}
 .mono{font-family:'IBM Plex Mono',monospace;}
-.wrap{max-width:1180px; margin:0 auto; padding:0 32px;}
-.layout{display:flex; gap:48px; align-items:flex-start;}
-nav.toc{
-  position:sticky; top:24px; width:220px; flex-shrink:0; padding-top:120px;
-}
-nav.toc a{
-  display:block; padding:8px 0; color:var(--ink-soft); text-decoration:none;
-  font-size:13px; border-left:2px solid var(--line); padding-left:14px; margin-bottom:2px;
-  transition:.15s;
-}
-nav.toc a:hover, nav.toc a.active{color:var(--teal-deep); border-left-color:var(--teal);}
-main{flex:1; min-width:0;}
+.wrap{max-width:900px; margin:0 auto; padding:0 24px;}
+.wide{max-width:1180px; margin:0 auto; padding:0 24px;}
+p{margin:0 0 20px;}
+a{color:inherit;}
 
-header.hero{
-  background:var(--teal-deep); color:#EDEEE6; padding:72px 0 56px;
-}
-header.hero .eyebrow{font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:.14em; text-transform:uppercase; color:#9FC2CC; margin-bottom:18px;}
-header.hero h1{font-size:40px; line-height:1.18; max-width:720px; color:#FFFFFF;}
-header.hero p.sub{max-width:640px; color:#C7D6D4; font-size:17px; margin-top:18px;}
+/* ---- band sections ---- */
+.band{padding:90px 0;}
+.band.white{background:var(--bg);}
+.band.navy{background:var(--navy); color:#F4F2E9;}
+.band.coral{background:var(--coral); color:#3A0A0C;}
+.band.gold{background:var(--gold); color:#3A2600;}
+.band.teal{background:var(--teal); color:#F4FFFC;}
+.band.violet{background:var(--violet); color:#F3F1FF;}
 
-.stat-row{display:grid; grid-template-columns:repeat(3,1fr); gap:1px; background:var(--line); margin-top:40px; border:1px solid var(--line);}
-.stat{background:var(--card); padding:22px 20px;}
-.stat .num{font-family:'Source Serif 4',serif; font-size:34px; color:var(--brick-deep);}
-.stat .lbl{font-size:13px; color:var(--ink-soft); margin-top:6px;}
+.eyebrow{font-family:'IBM Plex Mono',monospace; font-size:13px; letter-spacing:.14em; text-transform:uppercase; opacity:.8; margin-bottom:22px;}
+.big-q{font-size:52px; max-width:820px;}
+.big-q .hl{background:var(--ink); color:var(--gold); padding:0 10px; box-decoration-break:clone; -webkit-box-decoration-break:clone;}
 
-section{padding:56px 0; border-bottom:1px solid var(--line);}
-section:last-of-type{border-bottom:none;}
-.kicker{font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:.12em; text-transform:uppercase; color:var(--teal-deep);}
-section h2{font-size:28px; margin-top:8px; max-width:680px;}
-section p.lede{font-size:17px; color:var(--ink-soft); max-width:680px; margin-bottom:28px;}
-p{max-width:680px;}
-.chart-card{
-  background:var(--card); border:1px solid var(--line); border-radius:4px;
-  padding:24px 24px 16px; margin:24px 0; max-width:900px;
-}
-.chart-card .cap{font-size:13px; color:var(--ink-soft); margin-top:12px; border-top:1px solid var(--line); padding-top:10px;}
-.legend-row{display:flex; gap:18px; font-size:12px; color:var(--ink-soft); margin-bottom:6px; flex-wrap:wrap;}
-.legend-row span{display:flex; align-items:center; gap:5px;}
-.dot{width:9px; height:9px; border-radius:2px; display:inline-block;}
+/* ---- hero ---- */
+.hero{background:var(--navy); color:#F4F2E9; padding:110px 0 70px; position:relative; overflow:hidden;}
+.hero h1{font-size:64px; max-width:900px;}
+.hero h1 .hl-coral{color:var(--coral);}
+.hero h1 .hl-gold{color:var(--gold);}
+.hero p.sub{font-size:22px; max-width:640px; margin-top:26px; color:#C9C7D9;}
+.scrollcue{margin-top:60px; font-family:'IBM Plex Mono',monospace; font-size:13px; opacity:.6; letter-spacing:.08em;}
 
-.callout{
-  border-left:3px solid var(--brick); background:#F5EDE7; padding:16px 20px;
-  max-width:680px; margin:20px 0; font-size:15px;
-}
-.callout.good{border-left-color:var(--teal); background:#EAF1F0;}
+/* ---- stat strip ---- */
+.stat-strip{display:grid; grid-template-columns:repeat(3,1fr); gap:1px; background:rgba(255,255,255,0.15); margin-top:50px; border-radius:6px; overflow:hidden;}
+.stat-strip .cell{background:rgba(255,255,255,0.06); padding:26px 22px;}
+.stat-strip .num{font-family:'Archivo Black'; font-size:40px; line-height:1;}
+.stat-strip .lbl{font-size:14px; margin-top:10px; color:#C9C7D9;}
 
-.policy-grid{display:grid; grid-template-columns:1fr; gap:14px; margin-top:28px;}
-.policy-card{background:var(--card); border:1px solid var(--line); border-radius:4px; padding:20px 24px; display:grid; grid-template-columns:150px 1fr 220px; gap:20px; align-items:start;}
-.policy-card .tag{font-family:'IBM Plex Mono',monospace; font-size:11px; text-transform:uppercase; letter-spacing:.06em; color:var(--ochre-deep); background:#FBF1DE; padding:4px 8px; border-radius:3px; display:inline-block;}
-.policy-card h4{font-family:'Inter'; font-weight:600; font-size:15px; margin:0 0 6px;}
-.policy-card p{font-size:14px; color:var(--ink-soft); margin:0; max-width:none;}
-.policy-card .target{font-size:13px; border-left:2px solid var(--ochre); padding-left:12px; color:var(--ink);}
-.policy-card .target b{display:block; font-size:12px; color:var(--ochre-deep); text-transform:uppercase; letter-spacing:.04em; margin-bottom:3px;}
+/* ---- verdict banner ---- */
+.verdict{background:var(--coral); padding:80px 0; text-align:center;}
+.verdict .eyebrow{color:#3A0A0C;}
+.verdict h2{font-size:46px; color:#2A0507; max-width:780px; margin:0 auto;}
+.verdict p{font-size:20px; max-width:640px; margin:26px auto 0; color:#3A0A0C;}
 
-.fullbleed-map{
-  position:relative; width:100%; height:92vh; min-height:640px;
-  background:#EAE7DC; margin-top:20px; margin-bottom:20px; border-radius:4px; overflow:hidden;
-}
-#leafletMap{position:absolute; inset:0; width:100%; height:100%; background:#EAE7DC; z-index:1;}
-.leaflet-tooltip.tract-tip{font-family:'Inter'; font-size:12.5px; background:var(--teal-deep); color:#fff; border:none; box-shadow:0 3px 10px rgba(0,0,0,0.2);}
-.leaflet-tooltip.tract-tip::before{border-top-color:var(--teal-deep);}
-.map-overlay{
-  position:absolute; background:rgba(255,255,255,0.97); border:1px solid var(--line); border-radius:6px;
-  box-shadow:0 4px 18px rgba(20,30,30,0.12); padding:16px 18px; max-width:290px; z-index:4;
-}
+/* ---- explainer icons ---- */
+.explain-row{display:flex; align-items:center; gap:18px; margin:50px 0; flex-wrap:wrap; justify-content:center;}
+.house{width:86px; height:86px; position:relative; flex-shrink:0;}
+.house .roof{width:0; height:0; border-left:43px solid transparent; border-right:43px solid transparent; border-bottom:36px solid var(--roofc,var(--coral));}
+.house .body{width:66px; height:44px; margin:0 auto; background:var(--wallc,#fff); border:3px solid var(--ink);}
+.arrow{font-size:32px; color:var(--ink-soft); flex-shrink:0;}
+.explain-cap{text-align:center; font-size:14px; max-width:120px; color:var(--ink-soft); margin-top:10px;}
+.explain-item{display:flex; flex-direction:column; align-items:center;}
+
+/* ---- section heads ---- */
+.kicker{font-family:'IBM Plex Mono',monospace; font-size:13px; letter-spacing:.12em; text-transform:uppercase; color:var(--teal-deep);}
+.band.navy .kicker, .band.coral .kicker, .band.teal .kicker, .band.violet .kicker{color:rgba(255,255,255,0.75);}
+h2.section-title{font-size:38px; margin-top:10px; max-width:700px;}
+p.lede{font-size:20px; color:var(--ink-soft); max-width:680px; margin-top:18px;}
+.band.navy p.lede, .band.coral p.lede, .band.teal p.lede, .band.violet p.lede{color:rgba(255,255,255,0.85);}
+
+/* ---- chart cards ---- */
+.chart-card{background:#fff; border:2px solid var(--ink); border-radius:8px; padding:26px 26px 20px; margin:34px 0; box-shadow:6px 6px 0 var(--ink); color:var(--ink);}
+.chart-card.on-dark{background:#fff;}
+.legend-row{display:flex; flex-wrap:wrap; gap:16px; font-size:13px; color:var(--ink-soft); margin-bottom:14px;}
+.legend-row span{display:flex; align-items:center; gap:6px;}
+.dot{width:11px; height:11px; border-radius:3px; display:inline-block;}
+.chart-cap{font-size:14px; color:var(--ink-soft); margin-top:14px; border-top:2px dashed var(--line); padding-top:12px;}
+.callout-stat{position:absolute; font-family:'Archivo Black'; text-align:center; pointer-events:none;}
+
+/* ---- pull quote big number ---- */
+.pull-number{text-align:center; margin:50px 0;}
+.pull-number .num{font-family:'Archivo Black'; font-size:110px; line-height:1; color:var(--coral);}
+.pull-number .cap{font-size:18px; color:var(--ink-soft); max-width:480px; margin:14px auto 0;}
+
+/* ---- evidence checklist ---- */
+.evidence-grid{display:grid; grid-template-columns:1fr 1fr; gap:24px; margin-top:36px;}
+.evidence-card{border-radius:10px; padding:26px; color:var(--ink);}
+.evidence-card.against{background:#FFF1F1; border:2px solid var(--coral);}
+.evidence-card.for{background:#EFFBF8; border:2px solid var(--teal);}
+.evidence-card h4{font-family:'Space Grotesk'; font-weight:700; font-size:19px; margin-bottom:14px;}
+.evidence-card.against h4{color:var(--coral-deep);}
+.evidence-card.for h4{color:var(--teal-deep);}
+.evidence-card ul{margin:0; padding-left:20px; font-size:15.5px;}
+.evidence-card li{margin-bottom:12px;}
+@media (max-width:800px){.evidence-grid{grid-template-columns:1fr;}}
+
+/* ---- map section ---- */
+.fullbleed-map{position:relative; width:100%; height:92vh; min-height:640px; background:#EAE7DC; margin-top:30px; border-radius:8px; overflow:hidden; border:2px solid var(--ink);}
+#leafletMap{position:absolute; inset:0; width:100%; height:100%; z-index:1;}
+.leaflet-tooltip.tract-tip{font-family:'Space Grotesk'; font-size:12.5px; background:var(--navy); color:#fff; border:none; box-shadow:0 3px 10px rgba(0,0,0,0.25);}
+.leaflet-tooltip.tract-tip::before{border-top-color:var(--navy);}
+.map-overlay{position:absolute; background:rgba(255,255,255,0.98); border:2px solid var(--ink); border-radius:8px; box-shadow:5px 5px 0 rgba(20,21,26,0.25); padding:16px 18px; max-width:290px; z-index:4;}
 .map-overlay-left{top:20px; left:20px;}
 .map-overlay-right{top:20px; right:20px; max-width:300px;}
 .policy-buttons{display:flex; flex-direction:column; gap:6px; margin-bottom:14px;}
-.pbtn{
-  font-family:'Inter'; font-size:12.5px; padding:8px 12px; border-radius:5px; text-align:left;
-  border:1px solid var(--line); background:#fff; color:var(--ink-soft); cursor:pointer;
-}
-.pbtn:hover{border-color:var(--teal);}
-.pbtn.active{background:var(--teal-deep); border-color:var(--teal-deep); color:#fff;}
-.map-legend{border-top:1px solid var(--line); padding-top:12px; font-size:12px; color:var(--ink-soft);}
+.pbtn{font-family:'Space Grotesk'; font-weight:600; font-size:12.5px; padding:9px 12px; border-radius:5px; text-align:left; border:2px solid var(--ink); background:#fff; color:var(--ink); cursor:pointer;}
+.pbtn:hover{background:var(--gold);}
+.pbtn.active{background:var(--ink); border-color:var(--ink); color:#fff;}
+.map-legend{border-top:2px dashed var(--line); padding-top:12px; font-size:12.5px; color:var(--ink-soft);}
 .map-legend .lg-title{font-family:'IBM Plex Mono',monospace; font-size:10.5px; text-transform:uppercase; letter-spacing:.06em; color:var(--ink); margin-bottom:8px;}
 .map-legend .lg-row{display:flex; align-items:center; gap:8px; margin-bottom:5px;}
 .map-legend .lg-swatch{width:14px; height:14px; border-radius:3px; flex-shrink:0;}
-.map-legend .lg-line{width:20px; height:0; border-top:2px dashed var(--brick); flex-shrink:0;}
-.map-legend .gradient-bar{height:10px; border-radius:3px; background:linear-gradient(to right,#e6f1fb,#123A47); margin:4px 0 3px;}
+.map-legend .lg-line{width:20px; height:0; border-top:2px dashed var(--coral); flex-shrink:0;}
+.map-legend .gradient-bar{height:10px; border-radius:3px; background:linear-gradient(to right,#FFF3D6,#8A5A00); margin:4px 0 3px;}
 .map-legend .gradient-labels{display:flex; justify-content:space-between; font-size:10.5px;}
-.ziptoggle{display:flex; align-items:center; gap:6px; cursor:pointer; font-size:12px; margin-top:10px; color:var(--ink-soft);}
-.map-toolbar{position:absolute; bottom:16px; left:20px; z-index:4; background:rgba(255,255,255,0.95); border:1px solid var(--line); border-radius:6px; padding:8px 12px; font-size:11.5px; color:var(--ink-soft); font-family:'IBM Plex Mono',monospace;}
-.maptooltip{
-  position:absolute; pointer-events:none; background:var(--teal-deep); color:#fff; font-size:12px;
-  padding:8px 10px; border-radius:4px; max-width:220px; opacity:0; transition:opacity .1s; z-index:6;
-}
-.stat-card{background:transparent; border:none; padding:0;}
-.stat-card h4{font-family:'Inter'; font-weight:600; font-size:13.5px; margin:0; line-height:1.4;}
-.statfoot{font-size:12px; color:var(--ink-soft); margin-top:10px; border-top:1px solid var(--line); padding-top:8px;}
-@media (max-width:900px){
-  .fullbleed-map{height:auto; min-height:0;}
-  .map-overlay{position:static; max-width:none; margin-bottom:10px;}
-}
+.ziptoggle{display:flex; align-items:center; gap:6px; cursor:pointer; font-size:12.5px; margin-top:10px; color:var(--ink-soft);}
+.map-toolbar{position:absolute; bottom:16px; left:20px; z-index:4; background:rgba(255,255,255,0.97); border:2px solid var(--ink); border-radius:8px; padding:8px 12px; font-size:11.5px; color:var(--ink-soft); font-family:'IBM Plex Mono',monospace;}
+.stat-card h4{font-family:'Space Grotesk'; font-weight:700; font-size:14px; margin:0; line-height:1.4;}
+.statfoot{font-size:12.5px; color:var(--ink-soft); margin-top:10px; border-top:2px dashed var(--line); padding-top:8px;}
+@media (max-width:900px){.fullbleed-map{height:auto; min-height:0;} .map-overlay{position:static; max-width:none; margin-bottom:10px;}}
 
-.priority-badge{display:inline-block; font-size:11px; font-family:'IBM Plex Mono',monospace; padding:2px 8px; border-radius:10px; margin-left:8px;}
-.priority-badge.high{background:#F5E2DC; color:var(--brick-deep);}
-.priority-badge.med{background:#F6EBD2; color:var(--ochre-deep);}
+/* ---- toc dots ---- */
+nav.dots{position:fixed; right:22px; top:50%; transform:translateY(-50%); z-index:20; display:flex; flex-direction:column; gap:14px;}
+nav.dots a{width:10px; height:10px; border-radius:50%; background:var(--line); display:block; border:2px solid var(--ink); transition:.2s;}
+nav.dots a.active{background:var(--coral);}
+@media (max-width:900px){nav.dots{display:none;}}
 
-footer{padding:40px 0 80px; color:var(--ink-soft); font-size:13px;}
-
-@media (max-width:900px){
-  .layout{flex-direction:column;}
-  nav.toc{position:relative; top:0; width:100%; padding-top:0; display:flex; overflow-x:auto; gap:4px;}
-  nav.toc a{border-left:none; border-bottom:2px solid var(--line); padding:6px 10px; white-space:nowrap;}
-  .stat-row{grid-template-columns:1fr;}
-  .policy-card{grid-template-columns:1fr;}
-}
+footer{padding:50px 0 90px; color:var(--ink-soft); font-size:13.5px; background:var(--navy); color:#B9B7C9;}
+footer a{color:#F4F2E9;}
 </style>
 </head>
 <body>
 
-<header class="hero">
+<nav class="dots" id="dotNav">
+  <a href="#hero" data-label="Intro"></a>
+  <a href="#explainer" data-label="What is filtering"></a>
+  <a href="#verdict" data-label="The verdict"></a>
+  <a href="#where" data-label="Where"></a>
+  <a href="#for" data-label="The case for"></a>
+  <a href="#against" data-label="The case against"></a>
+  <a href="#chains" data-label="Following the moves"></a>
+  <a href="#renovation" data-label="Why no renovation"></a>
+  <a href="#recap" data-label="Recap"></a>
+  <a href="#policy" data-label="What would help"></a>
+</nav>
+
+<header class="hero" id="hero">
   <div class="wrap">
-    <div class="eyebrow">El Paso residential filtering &mdash; tract-level diagnosis</div>
-    <h1>New supply is shrinking, and the old housing stock isn't absorbing what filtering theory says it should.</h1>
-    <p class="sub">A synthesis of MLS sales, HMDA lending, repeat sales, ACS tenure/vacancy history (2010&ndash;2024), and 38 years of city permit data.</p>
-    <div class="stat-row">
-      <div class="stat"><div class="num">+2.4<span style="font-size:18px;">pp</span></div><div class="lbl">Vacancy rate in the cheapest tracts, still above 2010 despite 5 years of price gains</div></div>
-      <div class="stat"><div class="num">17%</div><div class="lbl">New-home price premium over resale in 2024, up from 11% in 2021</div></div>
-      <div class="stat"><div class="num">&minus;45%</div><div class="lbl">Drop in average annual permits, 2000s/2010s vs. 2020s</div></div>
+    <div class="eyebrow">A data investigation &middot; El Paso, Texas</div>
+    <h1>Is El Paso's housing actually getting <span class="hl-coral">cheaper</span> as it gets <span class="hl-gold">older</span>?</h1>
+    <p class="sub">Economists call this "filtering" &mdash; the idea that as new homes get built for buyers with money, the older homes they leave behind become affordable for everyone else. We pulled apart a decade of sales records, mortgage data, census surveys, and permits to find out if it's actually happening here.</p>
+
+    <div class="stat-strip">
+      <div class="cell"><div class="num">10.3%</div><div class="lbl">vacancy rate in El Paso's cheapest neighborhoods in 2024 &mdash; still above 2010</div></div>
+      <div class="cell"><div class="num">+54%</div><div class="lbl">the new-construction price premium has grown since 2021</div></div>
+      <div class="cell"><div class="num">&minus;45%</div><div class="lbl">fewer homes being permitted per year than a decade ago</div></div>
     </div>
+    <div class="scrollcue">&darr; scroll to see the evidence</div>
   </div>
 </header>
 
-<div class="wrap layout">
-  <nav class="toc">
-    <a href="#overall">01 &nbsp;Overall verdict</a>
-    <a href="#geography">02 &nbsp;Geography</a>
-    <a href="#demographics">03 &nbsp;Demographics</a>
-    <a href="#mechanism">04 &nbsp;The mechanism</a>
-    <a href="#supply">05 &nbsp;Supply pipeline</a>
-    <a href="#policy">06 &nbsp;Policy targets</a>
-  </nav>
+<section class="band white" id="explainer">
+  <div class="wrap">
+    <div class="kicker">First, the basics</div>
+    <h2 class="section-title">What does "filtering" even mean?</h2>
+    <p class="lede">It's the theory that housing markets sort themselves out over time, like a hand-me-down chain for an entire city.</p>
 
-  <main>
+    <div class="explain-row">
+      <div class="explain-item">
+        <div class="house"><div class="roof" style="border-bottom-color:var(--teal);"></div><div class="body" style="background:var(--teal); border-color:var(--ink);"></div></div>
+        <div class="explain-cap"><b>1.</b> A new home gets built. A higher-income family buys it.</div>
+      </div>
+      <div class="arrow">&rarr;</div>
+      <div class="explain-item">
+        <div class="house"><div class="roof" style="border-bottom-color:var(--gold);"></div><div class="body" style="background:var(--gold); border-color:var(--ink);"></div></div>
+        <div class="explain-cap"><b>2.</b> Their old home is now empty. It's older, so it's cheaper &mdash; a middle-income family moves in.</div>
+      </div>
+      <div class="arrow">&rarr;</div>
+      <div class="explain-item">
+        <div class="house"><div class="roof" style="border-bottom-color:var(--coral);"></div><div class="body" style="background:var(--coral); border-color:var(--ink);"></div></div>
+        <div class="explain-cap"><b>3.</b> That family's old home is even older and cheaper &mdash; a lower-income family gets it.</div>
+      </div>
+    </div>
+    <p style="text-align:center; max-width:600px; margin:0 auto; color:var(--ink-soft);">Repeat that chain for 40 years across a whole city, and in theory, the oldest housing stock should be the most affordable &mdash; not falling apart, just handed down and still in use. That's the promise. Here's what we actually found in El Paso.</p>
+  </div>
+</section>
 
-  <section id="overall">
-    <div class="kicker">01 &mdash; Overall verdict</div>
-    <h2>Not "no filtering" &mdash; weak, uneven filtering</h2>
-    <p class="lede">The claim that filtering "isn't happening at all" overstates it. Cheaper, older tracts show mild relative price convergence in repeat sales. But every operational signal &mdash; vacancy, tenure churn, new-vs-resale spread, permit volume &mdash; points the same direction: the mechanism is weak and getting weaker, concentrated in a shrinking part of the market.</p>
+<section class="verdict" id="verdict">
+  <div class="wrap">
+    <div class="eyebrow">The short answer</div>
+    <h2>Barely &mdash; and where it's closest to working, it isn't helping much.</h2>
+    <p>El Paso's cheapest, oldest neighborhoods aren't rotting. But they're not being smoothly absorbed the way the theory predicts either. Vacancy is stuck high. Rental turnover is sluggish. New construction is pulling further away in price instead of feeding the chain underneath it. The clearest evidence points to a weak, stalled version of filtering &mdash; not a healthy one, and not a total absence either. Here's the data, piece by piece.</p>
+  </div>
+</section>
+<section class="band white" id="where">
+  <div class="wrap">
+    <div class="kicker">Where &mdash; the geography</div>
+    <h2 class="section-title">A tale of two El Pasos</h2>
+    <p class="lede">Home prices aren't random across the city &mdash; they line up almost perfectly with how old the neighborhood is. The historic core costs about 60% less per square foot than the newest suburbs, and that gap hasn't budged in two years of sales data.</p>
+
     <div class="chart-card">
       <div class="legend-row">
-        <span><span class="dot" style="background:#2a78d6;"></span>New home $/sqft</span>
-        <span><span class="dot" style="background:#73726c;"></span>Resale $/sqft</span>
+        <span><span class="dot" style="background:var(--coral);"></span>Historic core (oldest, cheapest)</span>
+        <span><span class="dot" style="background:var(--gold);"></span>Established neighborhoods</span>
+        <span><span class="dot" style="background:var(--teal);"></span>Fast-growing new suburbs</span>
+        <span><span class="dot" style="background:var(--violet);"></span>West side &amp; Upper Valley</span>
       </div>
-      <div style="position:relative; height:300px;"><canvas id="chartGap"></canvas></div>
-      <div class="cap">MLS single-family sales, El Paso, 2021&ndash;2024. The premium new construction commands over resale housing has grown by roughly 50% in three years &mdash; the opposite of what active filtering would predict.</div>
+      <div style="position:relative; height:600px;"><canvas id="chartZip"></canvas></div>
+      <div class="chart-cap">Median sold price per square foot by zip code, MLS closed sales, April 2024&ndash;August 2025. If filtering were pulling these numbers together over time, we'd expect this gap to be narrowing &mdash; instead it's been flat.</div>
     </div>
-  </section>
 
-  <section id="geography">
-    <div class="kicker">02 &mdash; Geography</div>
-    <h2>The discount is real, and it's concentrated in the historic core</h2>
-    <p class="lede">Median sold price per square foot ranges from $115 in the central/south-central core to $188 in far-east and west-side new-construction zips &mdash; roughly a 60% spread that has held steady quarter over quarter.</p>
-    <div class="chart-card">
-      <div class="legend-row" style="flex-direction:column; align-items:flex-start; gap:4px;">
-        <span>Bar length = median sold price/sqft (2024-2025)</span>
-        <span style="display:flex; align-items:center; gap:8px; width:100%; max-width:320px;">
-          <span style="font-size:11px;">65%</span>
-          <span style="flex:1; height:10px; background:linear-gradient(to right,#e6f1fb,#042c53); border-radius:2px;"></span>
-          <span style="font-size:11px;">98%</span>
-        </span>
-        <span style="font-size:11.5px;">Tract minority population share (darker = higher), HMDA 2024</span>
-      </div>
-      <div style="position:relative; height:560px;"><canvas id="chartZip"></canvas></div>
-      <div class="cap">MLS closed sales, Apr 2024&ndash;Aug 2025, by zip code. Bars sorted low to high; color intensity = tract minority population share (HMDA, 2024).</div>
-    </div>
-  </section>
+    <p>This is exactly the geography that matters for filtering: the <b>historic core</b> &mdash; roughly the neighborhoods in and around downtown and South-Central El Paso &mdash; is where the oldest housing stock lives, and where the theory says affordability should be flowing to. The <b>fast-growing suburbs</b> to the far east and west are where nearly all of the new construction actually gets built. Filtering requires those two things to be connected &mdash; new supply up top loosening up the older stock underneath. Scroll down to see whether that's actually happening.</p>
+  </div>
+</section>
+<section class="band teal" id="for">
+  <div class="wrap">
+    <div class="kicker">The case FOR filtering</div>
+    <h2 class="section-title">The one piece of good news</h2>
+    <p class="lede">We tracked 1,609 homes that sold twice &mdash; once years ago, once again in 2022 &mdash; so we could measure real price growth on the exact same houses, not just averages.</p>
 
-  <section id="demographics">
-    <div class="kicker">03 &mdash; Demographics</div>
-    <h2>Price tracks vintage more than it tracks race &mdash; but they're entangled</h2>
-    <p class="lede">County-wide HMDA purchase loans (2024): median property value falls from $285K in the least-minority tracts to $215K in the most-minority tracts. But 79911 &mdash; 90% minority, new construction &mdash; sells at $188/sqft, higher than several majority-white legacy zips. Age of housing stock, not demographic composition per se, is the sharper predictor; they correlate because the historic core is both the oldest stock and the highest-minority area.</p>
-    <div class="callout">Hispanic/Latino applicants were denied credit at 29.3% in 2024 vs. 20.5% for non-Hispanic applicants &mdash; a real access barrier on top of the price gap, which matters because filtering only works if buyers can actually move into the newly-affordable stock.</div>
-  </section>
-
-  <section id="mechanism">
-    <div class="kicker">04 &mdash; The mechanism</div>
-    <h2>Vacancy is rising exactly where filtering should be tightening it</h2>
-    <p class="lede">Splitting tracts into value tiers and tracking ACS 5-year vacancy estimates since 2010: if filtering worked, the cheapest tier's vacancy should be low and stable &mdash; a sign that older stock keeps getting absorbed by new buyers. Instead it climbed from 8.4% to a peak of 11.7% (2019) and has only partly recovered to 10.3% (2024), while mid- and high-value tiers returned to or below their 2010 levels.</p>
     <div class="chart-card">
       <div class="legend-row">
-        <span><span class="dot" style="background:#A34432;"></span>Lowest value tier</span>
-        <span><span class="dot" style="background:#B9822E;"></span>Mid value tier</span>
-        <span><span class="dot" style="background:#2C6072;"></span>Highest value tier</span>
+        <span><span class="dot" style="background:var(--coral);"></span>Cheapest fifth of tracts</span>
+        <span><span class="dot" style="background:var(--violet);"></span>Priciest fifth of tracts</span>
+      </div>
+      <div style="position:relative; height:320px;"><canvas id="chartCagr"></canvas></div>
+      <div class="chart-cap">Average annual price growth on the same homes, sold twice between 1996&ndash;2020 and again in 2022, grouped by neighborhood value. Source: Repeat Sales file, single-family homes only.</div>
+    </div>
+
+    <p style="color:#eafffb;">On a <b>percentage</b> basis, homes in El Paso's cheapest neighborhoods actually gained value a little faster than homes in the priciest ones &mdash; 7.2% a year versus 6.6%. That's a real, measurable sign that the affordability gap isn't accelerating in the wrong direction. If this were the whole story, we'd call it a point in filtering's favor.</p>
+    <p style="color:#eafffb;">But percentages can be misleading when the starting prices are so different. Keep scrolling.</p>
+  </div>
+</section>
+<section class="band white" id="against">
+  <div class="wrap">
+    <div class="kicker">The case AGAINST filtering</div>
+    <h2 class="section-title">Same percentage, very different dollars</h2>
+    <p class="lede">A 7.2% gain sounds better than 6.6%. But 7.2% of a cheap home is a small number, and 6.6% of an expensive home is a big one.</p>
+
+    <div class="chart-card">
+      <div class="legend-row">
+        <span><span class="dot" style="background:var(--coral);"></span>Cheapest fifth of tracts</span>
+        <span><span class="dot" style="background:var(--violet);"></span>Priciest fifth of tracts</span>
+      </div>
+      <div style="position:relative; height:280px;"><canvas id="chartDollar"></canvas></div>
+      <div class="chart-cap">Average dollar gain per year, same repeat-sales homes as the chart above. The cheapest tracts averaged $109k in value; the priciest averaged $291k.</div>
+    </div>
+
+    <div class="pull-number">
+      <div class="num">3&times;</div>
+      <div class="cap">Homes in El Paso's priciest neighborhoods build wealth about three times faster in real dollars than homes in the cheapest ones &mdash; even though the percentage growth rates are almost the same. The gap isn't closing. It's just moving in percent instead of dollars.</div>
+    </div>
+  </div>
+</section>
+
+<section class="band navy">
+  <div class="wrap">
+    <div class="kicker">The case AGAINST filtering, continued</div>
+    <h2 class="section-title">The cheap neighborhoods have a vacancy problem, not an absorption success</h2>
+    <p class="lede">If filtering were working, the oldest, cheapest homes should be in high demand &mdash; snapped up as soon as they become available. Instead, vacancy there has stayed stubbornly high for 15 years.</p>
+
+    <div class="chart-card">
+      <div class="legend-row">
+        <span><span class="dot" style="background:var(--coral);"></span>Cheapest third of tracts</span>
+        <span><span class="dot" style="background:var(--gold);"></span>Middle third</span>
+        <span><span class="dot" style="background:var(--violet);"></span>Priciest third</span>
       </div>
       <div style="position:relative; height:320px;"><canvas id="chartVacancy"></canvas></div>
-      <div class="cap">ACS DP04 5-year estimates, tracts matched to Housing Characteristics value tiers (156 of 158 tracts). Vacancy gap between lowest and highest tier: +0.8pp in 2010 &rarr; +3.1pp in 2024.</div>
+      <div class="chart-cap">Census vacancy rate estimates by neighborhood value tier, 2010&ndash;2024. The priciest and middle tiers are back near their 2010 levels. The cheapest tier never fully recovered from its 2019 peak.</div>
     </div>
-    <p>Rental conversion tells a similar story: renter-occupied share rose least in the cheapest tier (+2.7pp, 2010&ndash;2024) versus the mid (+4.5pp) and highest tiers (+4.8pp). The classic filtering channel &mdash; aging owner-occupied homes converting to rentals as they move down-market &mdash; is running <em>slower</em>, not faster, in the tracts that most need it.</p>
-  </section>
+    <p style="color:#C9C7D9;">This is the opposite of what a healthy filtering market looks like. Empty homes sitting in the cheapest neighborhoods for years at a time is a sign of neighborhoods being avoided, not neighborhoods absorbing move-down demand.</p>
+  </div>
+</section>
 
-  <section id="supply">
-    <div class="kicker">05 &mdash; Supply pipeline</div>
-    <h2>The city is building roughly half as much as it used to</h2>
-    <p class="lede">Filtering needs a steady flow of new construction pulling higher-income buyers out of existing homes. That flow has been cut nearly in half, and what's left is increasingly single-family only.</p>
+<section class="band gold">
+  <div class="wrap">
+    <div class="kicker">The case AGAINST filtering, continued</div>
+    <h2 class="section-title">New construction is pulling away from everything else</h2>
+    <p class="lede">If filtering were working, new and older homes should trade at prices that move together over time. Instead, new construction has become a different, faster-moving market of its own.</p>
+
     <div class="chart-card">
       <div class="legend-row">
-        <span><span class="dot" style="background:#2C6072;"></span>Single-family permits</span>
-        <span><span class="dot" style="background:#B9822E;"></span>Multifamily + other permits</span>
+        <span><span class="dot" style="background:var(--violet);"></span>New homes</span>
+        <span><span class="dot" style="background:var(--ink-soft);"></span>Resale homes</span>
+      </div>
+      <div style="position:relative; height:300px;"><canvas id="chartGap"></canvas></div>
+      <div class="chart-cap">Median sold price per square foot, new construction vs. resale, El Paso single-family MLS sales, 2021&ndash;2024.</div>
+    </div>
+
+    <div class="pull-number">
+      <div class="num" style="color:var(--coral-deep);">17%</div>
+      <div class="cap" style="color:#3A2600;">The premium new homes now command over resale homes &mdash; up from 11% just three years earlier. That gap should be shrinking if filtering were doing its job. It's growing instead.</div>
+    </div>
+  </div>
+</section>
+
+<section class="band white">
+  <div class="wrap">
+    <div class="kicker">The case AGAINST filtering, continued</div>
+    <h2 class="section-title">And there's simply less new housing to fuel the chain</h2>
+    <p class="lede">Filtering needs a steady supply of new homes at the top to push the whole chain downward. El Paso is building roughly half as much housing as it used to.</p>
+
+    <div class="chart-card">
+      <div class="legend-row">
+        <span><span class="dot" style="background:var(--teal);"></span>Single-family permits</span>
+        <span><span class="dot" style="background:var(--gold-deep);"></span>Multifamily &amp; other permits</span>
       </div>
       <div style="position:relative; height:320px;"><canvas id="chartPermits"></canvas></div>
-      <div class="cap">City of El Paso annual building permits, 1988&ndash;2025. Single-family share of permits rose from ~65&ndash;70% (2010s) to 85&ndash;89% (2020s) &mdash; multifamily production, the more direct channel to renters, shrank even faster than the overall total.</div>
+      <div class="chart-cap">City of El Paso annual residential building permits, 1988&ndash;2025.</div>
     </div>
-  </section>
+    <p>Multifamily housing &mdash; the type most directly connected to renters, who are usually the ones filtering is supposed to help &mdash; has shrunk even faster than the overall total. Single-family homes now make up 85&ndash;89% of permits, up from about two-thirds a decade ago.</p>
+  </div>
+</section>
+<section class="band coral" id="chains">
+  <div class="wrap">
+    <div class="kicker">The case AGAINST filtering, one more piece</div>
+    <h2 class="section-title">We traced actual moves &mdash; using real sale prices this time</h2>
+    <p class="lede">Filtering theory makes a specific prediction: when someone moves out of a home, whoever moves in next should be paying less. We tested this using mover records that show exactly where 9,463 households moved from and to, matched against real MLS sold prices instead of modeled estimates &mdash; a meaningfully stronger version of this test than our first pass.</p>
 
-  <section id="policy">
-    <div class="kicker">06 &mdash; Where intervention would help most</div>
-    <h2>Policy targets, ranked by what the data actually shows is broken</h2>
-    <p class="lede">Each recommendation below is tied to a specific finding above, and to specific tracts rather than the whole city &mdash; filtering isn't failing everywhere in the same way, so a single city-wide policy would waste effort on the tiers that already work. Click a policy to see exactly which census tracts it targets and the data behind why.</p>
-  </section>
-  </main>
-</div>
+    <div class="chart-card">
+      <div class="legend-row">
+        <span><span class="dot" style="background:var(--ink-soft);"></span>Home they left (real MLS sold price)</span>
+        <span><span class="dot" style="background:var(--violet);"></span>Home they moved into (real MLS sold price)</span>
+      </div>
+      <div style="position:relative; height:260px;"><canvas id="chartChain"></canvas></div>
+      <div class="chart-cap">Median real MLS sold price tied to each household's former and current address, for 137 movers where both addresses matched an actual MLS sale on the exact house number and a fuzzy-matched street name (score &ge;85).</div>
+    </div>
 
+    <div class="pull-number">
+      <div class="num" style="color:#2A0507;">71%</div>
+      <div class="cap" style="color:#3A0A0C;">of these movers traded up to a more expensive home &mdash; a median jump from $250,000 to $310,000, about 34% more. That's a healthy, normal picture of households moving up. What it doesn't show is what happens next: whether someone else then moves into the cheaper home they left at a real discount.</div>
+    </div>
+    <p style="color:#3A0A0C;">This version matches each mover's own former and current address directly against real MLS sales &mdash; blocked on an exact house number match, then fuzzy-matched on street name to allow for typos and abbreviations (e.g. "DR" vs. "Drive"). It's a stricter, more precise method than our first pass, and it lands on essentially the same conclusion with more data behind it: people are moving up in El Paso &mdash; just not obviously by freeing up a bargain for whoever comes next.</p>
+  </div>
+</section>
+
+<section class="band gold" id="renovation">
+  <div class="wrap">
+    <div class="kicker">A plausible reason why</div>
+    <h2 class="section-title">The discount on old homes may just be too small to bother fixing them up</h2>
+    <p class="lede">Here's one explanation for why the historic core stays vacant and undervalued instead of getting renovated: buying old and fixing it up may not actually save enough money to be worth the effort, once you account for what renovation costs.</p>
+
+    <div class="chart-card">
+      <div class="legend-row">
+        <span><span class="dot" style="background:var(--coral);"></span>Historic core</span>
+        <span><span class="dot" style="background:var(--teal);"></span>Fast-growing new suburbs</span>
+      </div>
+      <div style="position:relative; height:320px;"><canvas id="chartPercentile"></canvas></div>
+      <div class="chart-cap">Sale price per square foot at each percentile of the distribution, MLS closed sales. Notice the core's top 10% overlaps with the new suburbs' middle &mdash; some old homes do reach near-new prices, but it's the exception, not the rule.</div>
+    </div>
+
+    <div class="chart-card">
+      <div class="legend-row">
+        <span><span class="dot" style="background:var(--violet);"></span>What you'd save buying old instead of new</span>
+        <span><span class="dot" style="background:var(--ink-soft);"></span>What renovation typically costs</span>
+      </div>
+      <div style="position:relative; height:260px;"><canvas id="chartRenoMath"></canvas></div>
+      <div class="chart-cap">For a typical 1,360 sqft historic-core home. Renovation cost ranges are general national benchmarks (HomeAdvisor/Angi, 2025) &mdash; not El Paso-specific figures, since we don't have local contractor cost data.</div>
+    </div>
+
+    <p>The math: a typical old-core home sells for about $33/sqft less than a comparable new-construction home &mdash; roughly a <b>$45,000 discount</b> on a typical 1,360 sqft house. Even a light cosmetic refresh runs $20,000&ndash;$82,000 nationally, and a genuine mid-range remodel runs $54,000&ndash;$204,000. So the entire savings from buying old barely covers the lightest possible touch-up, and doesn't come close to funding a renovation that would make the home comparable to new construction. If the gap were wider &mdash; say, if new construction commanded a much bigger premium &mdash; buying and fixing up an old home would make a lot more financial sense, and we'd expect to see more of it happening. That's a plausible, if indirect, explanation for the persistent vacancy and disinvestment in El Paso's oldest neighborhoods: not that no one wants to live there, but that the numbers don't clearly reward fixing up what's already there.</p>
+  </div>
+</section>
+
+
+<section class="band violet" id="recap">
+  <div class="wrap">
+    <div class="kicker">Adding it up</div>
+    <h2 class="section-title">The evidence, side by side</h2>
+    <p class="lede">One real signal points toward filtering working. Five separate, independent signals point toward it stalling. That's why the honest answer is "barely" rather than a clean yes or no.</p>
+
+    <div class="evidence-grid">
+      <div class="evidence-card for">
+        <h4>&#10003; Points toward filtering</h4>
+        <ul>
+          <li><b>Percentage price growth</b> in the cheapest neighborhoods (7.2%/year) has kept pace with &mdash; and even slightly beaten &mdash; the priciest ones (6.6%/year) over the long run.</li>
+          <li>Movers overall are <b>trading up</b>: 71% moved to a more expensive home ($250k &rarr; $310k median, real MLS prices), confirmed on a house-number-verified match. Mobility itself isn't broken.</li>
+        </ul>
+      </div>
+      <div class="evidence-card against">
+        <h4>&#10007; Points against filtering</h4>
+        <ul>
+          <li><b>Dollar-value growth</b> in the priciest neighborhoods is roughly 3&times; faster than in the cheapest ones &mdash; the real wealth gap is widening even as percentages look similar.</li>
+          <li><b>Vacancy</b> in the cheapest third of tracts is still above its 2010 level, while other tiers have recovered.</li>
+          <li>The <b>new-vs-resale price gap</b> grew from 11% to 17% in three years &mdash; new construction is a separate, faster-moving market, not feeding the chain below it.</li>
+          <li><b>New housing permits</b> have fallen roughly 45% since the 2010s, cutting off the supply that filtering depends on.</li>
+          <li>The handful of traceable moves where the same home changes hands twice show <b>no clear discount</b> passed to the next occupant.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="callout" style="background:rgba(255,255,255,0.12); border:2px solid rgba(255,255,255,0.4); border-radius:10px; padding:22px 26px; margin-top:26px; color:#F3F1FF;">
+      <b>A plausible reason why:</b> the discount for buying an old home instead of new (about $45,000 on a typical historic-core house) barely covers even a light cosmetic refresh, let alone a real renovation. If new construction cost a lot more relative to resale, fixing up the old stock would pencil out financially &mdash; right now, for most buyers, it doesn't.
+    </div>
+
+    <p style="margin-top:36px;">Put simply: El Paso's oldest, cheapest neighborhoods aren't collapsing, and the theory isn't completely dead here. But nothing in this data shows filtering actively working as an engine of affordability right now &mdash; it looks more like a slow, stalled version of the process, propped up mostly by low starting prices rather than healthy neighborhood turnover.</p>
+  </div>
+</section>
+<section class="band white" id="policy">
+  <div class="wrap">
+    <div class="kicker">So what would actually help?</div>
+    <h2 class="section-title">Five targeted fixes, mapped to the tracts that need them</h2>
+    <p class="lede">Filtering isn't broken everywhere in the same way, so a single city-wide policy would waste effort on the neighborhoods that are already fine. Click a policy to see exactly which census tracts it targets and the data behind why.</p>
+  </div>
+
+  <div class="wide">
   <div class="fullbleed-map">
     <div id="leafletMap"></div>
 
@@ -267,136 +436,179 @@ footer{padding:40px 0 80px; color:var(--ink-soft); font-size:13px;}
       <div id="statFoot" class="statfoot">Darker = higher average value (First American AVM). Click a policy on the left to see its target tracts and the data behind the targeting.</div>
     </div>
 
-    <div class="map-toolbar" id="mapStatus">158 census tracts &middot; scroll/drag to pan &amp; zoom &middot; TIGER/Line pre-2020 boundaries (matches Housing Characteristics &amp; Repeat Sales tract IDs)</div>
+    <div class="map-toolbar" id="mapStatus">158 census tracts &middot; scroll/drag to pan &amp; zoom &middot; TIGER/Line pre-2020 boundaries</div>
+  </div>
   </div>
 
   <div class="wrap">
-    <p class="cap" style="max-width:900px;">Tract geometry: U.S. Census Bureau TIGER/Line 2015 vintage, matched to the same tract IDs used in the Housing Characteristics and Repeat Sales files. Zip (ZCTA) boundaries shown as dashed reference lines only.</p>
-    <div class="policy-grid">
+    <p class="chart-cap" style="max-width:900px; margin-top:20px;">Tract geometry: U.S. Census Bureau TIGER/Line, matched to the same tract IDs used in the Housing Characteristics and Repeat Sales files. Zip boundaries shown as dashed reference lines only.</p>
 
-      <div class="policy-card">
-        <div><span class="tag">Rehab &amp; anti-vacancy</span><span class="priority-badge high">High priority</span></div>
-        <div>
-          <h4>Vacant/blighted property registration fees + targeted rehab loans</h4>
-          <p>Rising, sticky vacancy in the lowest-value tier (10.3% in 2024, vs. 7.2% in the highest tier) looks like disinvestment, not efficient turnover. A registration fee on long-vacant residential parcels raises the cost of land-banking or neglect; paired with low-interest rehab loans or a tax abatement for occupancy, it pushes stock back into active use rather than sitting empty.</p>
-        </div>
-        <div class="target"><b>Target</b>Central/south-central core: zips 79905, 79915, 79907, 79903, 79904; tracts flagged "Lowest Demand" / "Lowest value tier" in the Housing Characteristics file.</div>
-      </div>
-
-      <div class="policy-card">
-        <div><span class="tag">Zoning reform</span><span class="priority-badge high">High priority</span></div>
-        <div>
-          <h4>Legalize duplexes/triplexes and ADUs in the historic core</h4>
-          <p>Renter-share growth is weakest exactly where filtering should convert aging owner-occupied homes to rentals fastest. Gentle upzoning (missing-middle infill, ADUs) gives owners of aging homes a path to add units and capture rental income, instead of the home simply sitting owner-occupied, deteriorating, or vacant.</p>
-        </div>
-        <div class="target"><b>Target</b>Same core tracts as above, plus any adjacent "Average Demand" tracts with older (pre-1970) vintage per Housing Characteristics.</div>
-      </div>
-
-      <div class="policy-card">
-        <div><span class="tag">Permitting &amp; supply</span><span class="priority-badge high">High priority</span></div>
-        <div>
-          <h4>Streamline approvals and cut minimum lot/parking requirements for infill multifamily</h4>
-          <p>Total permits fell ~45% from the 2010s pace, and multifamily's share of that shrank even faster. Rebuilding the multifamily pipeline &mdash; specifically infill 2&ndash;20 unit product inside already-serviced areas &mdash; is the most direct way to add supply at the price points that could actually filter, rather than adding only greenfield single-family at the edge.</p>
-        </div>
-        <div class="target"><b>Target</b>City-wide policy change, but prioritize approval-timeline relief for parcels inside 79901&ndash;79907, 79924/79925 corridors with existing infrastructure.</div>
-      </div>
-
-      <div class="policy-card">
-        <div><span class="tag">Fair lending access</span><span class="priority-badge med">Medium priority</span></div>
-        <div>
-          <h4>Down-payment assistance + credit-building programs tied to the affordable core</h4>
-          <p>A 29.3% denial rate for Hispanic applicants vs. 20.5% for non-Hispanic applicants means even where cheap stock exists, buyers who'd benefit most are disproportionately blocked from moving into it. Targeted down-payment assistance or CDFI-partnered underwriting closes the access gap that price alone doesn't fix.</p>
-        </div>
-        <div class="target"><b>Target</b>Buyers purchasing in the identified low-value/high-minority tracts (79905, 79915, 79907, 79903) specifically, not city-wide.</div>
-      </div>
-
-      <div class="policy-card">
-        <div><span class="tag">Growth management</span><span class="priority-badge med">Medium priority</span></div>
-        <div>
-          <h4>Impact-fee or inclusionary mix requirement on new far-east/west subdivisions</h4>
-          <p>New construction (79938, 79928, 79934, 79911, 79932) is where nearly all permit activity already lands, and its price premium over resale keeps widening. Requiring a modest share of smaller/attached units in new subdivisions there won't fix the core, but it slows the divergence at the top and adds starter-home supply the resale market currently lacks.</p>
-        </div>
-        <div class="target"><b>Target</b>Fast-growth peripheral zips only &mdash; not a city-wide inclusionary mandate, which would just suppress the one part of the pipeline that's still building.</div>
-      </div>
-
+    <div style="margin-top:40px;">
+      <h3 style="font-family:'Space Grotesk'; font-weight:700; font-size:22px;">Where each policy is aimed, in plain terms</h3>
+      <ul style="font-size:16px; line-height:1.8;">
+        <li><b style="color:var(--coral-deep);">Vacant property &amp; rehab</b> &mdash; the historic core, where vacancy is highest and values lowest. Registration fees on empty homes plus rehab loans to get them occupied again.</li>
+        <li><b style="color:#8A5A00;">Missing-middle zoning</b> &mdash; similar core tracts, already more renter-occupied than average. Legalize duplexes/triplexes/ADUs so aging homes can add units instead of sitting still.</li>
+        <li><b style="color:var(--teal-deep);">Multifamily infill permitting</b> &mdash; the oldest-vintage third of tracts citywide. Streamline approvals for small multifamily buildings on already-serviced land.</li>
+        <li><b style="color:var(--violet-deep);">Fair lending access</b> &mdash; same core tracts. Hispanic/Latino applicants were denied credit at nearly 1.5&times; the rate of non-Hispanic applicants citywide in 2024; down-payment assistance targets that gap directly.</li>
+        <li><b style="color:var(--navy);">Inclusionary mix</b> &mdash; the fast-growing eastern and western suburbs, where nearly all new supply already lands. A modest share of smaller/attached units there slows the growing new-vs-resale price gap.</li>
+      </ul>
     </div>
-
-    <div class="callout good">Net read: the highest-leverage moves are demand-side interventions in the core (rehab incentives, missing-middle zoning) paired with rebuilding the multifamily supply pipeline city-wide. Anything aimed only at the periphery, where the market is already active, will miss the tracts where the data show filtering is actually stalled.</div>
   </div>
+</section>
 
 <footer>
-  <div class="wrap">Sources: MLS closed sales (Apr 2024&ndash;Aug 2025 and 2021&ndash;2024 extended file), HMDA LAR 2024 (El Paso County, full universe), Fuzzy-matched MLS&times;HMDA sample, Repeat sales (single-family, sale pairs 1996&ndash;2022), Housing Characteristics by Tract (First American AVM), ACS DP04 5-year estimates 2010&ndash;2024, City of El Paso annual building permits 1988&ndash;2025. Tract boundaries pre-2020 vintage; 2 of 158 tracts could not be matched across boundary changes.</div>
+  <div class="wrap">Sources: MLS closed sales (Apr 2024&ndash;Aug 2025 and 2021&ndash;2024 extended file), HMDA LAR 2024 (El Paso County, full universe), Repeat Sales (single-family, sale pairs 1996&ndash;2022), Housing Characteristics by Tract (First American AVM), ACS DP04 5-year estimates 2010&ndash;2024, City of El Paso annual building permits 1988&ndash;2025. Tract boundaries pre-2020 vintage.</div>
 </footer>
-
 <script>
-function css(v){return getComputedStyle(document.documentElement).getPropertyValue(v).trim();}
+/* ============ palette ============ */
+const CORAL='#FF5A5F', CORAL_DEEP='#B8272C', GOLD='#FFC53D', GOLD_DEEP='#8A5A00',
+      TEAL='#12A594', TEAL_DEEP='#0B4F47', VIOLET='#5B4FE9', VIOLET_DEEP='#2E2478', NAVY='#14152E', INKSOFT='#514F5C';
 
-new Chart(document.getElementById('chartGap'), {
-  type:'line',
-  data:{ labels:['2021','2022','2023','2024'], datasets:[
-    {label:'New home', data:[126.95,147.14,162.11,169.11], borderColor:'#2a78d6', backgroundColor:'#2a78d6', borderWidth:2, pointRadius:4, tension:.15},
-    {label:'Resale', data:[114.84,133.00,142.34,144.73], borderColor:'#73726c', backgroundColor:'#73726c', borderWidth:2, pointRadius:4, tension:.15, borderDash:[6,3]}
-  ]},
-  options:{ responsive:true, maintainAspectRatio:false,
-    plugins:{ legend:{display:false}, tooltip:{callbacks:{label:(c)=>c.dataset.label+': $'+c.parsed.y.toFixed(0)+'/sqft'}} },
-    scales:{ y:{ title:{display:true,text:'Median sold $/sqft'}, grid:{color:'#e1e0d9'} }, x:{ grid:{display:false} } }
-  }
-});
+Chart.defaults.font.family = "'Space Grotesk', sans-serif";
+Chart.defaults.color = '#514F5C';
 
+/* ============ 1. Zip value ladder ============ */
 const zipData=[
-{zip:'79905',ppsf:114.98,min:97.27},{zip:'79849',ppsf:123.21,min:98.48},{zip:'79915',ppsf:125.74,min:97.16},
-{zip:'79907',ppsf:131.68,min:96.50},{zip:'79904',ppsf:133.74,min:87.41},{zip:'79903',ppsf:136.38,min:93.55},
-{zip:'79935',ppsf:139.37,min:84.37},{zip:'79925',ppsf:139.72,min:85.26},{zip:'79924',ppsf:139.75,min:83.48},
-{zip:'79836',ppsf:148.35,min:96.84},{zip:'79936',ppsf:148.43,min:91.89},{zip:'79930',ppsf:150.84,min:93.73},
-{zip:'79927',ppsf:155.29,min:97.59},{zip:'79938',ppsf:156.62,min:88.05},{zip:'79934',ppsf:157.04,min:79.75},
-{zip:'79821',ppsf:158.87,min:90.02},{zip:'79835',ppsf:161.33,min:89.86},{zip:'79928',ppsf:167.38,min:93.11},
-{zip:'79912',ppsf:167.53,min:73.94},{zip:'79932',ppsf:169.54,min:81.59},{zip:'79902',ppsf:171.32,min:76.59},
-{zip:'79922',ppsf:178.66,min:65.33},{zip:'79911',ppsf:187.60,min:90.02}
+{zip:'79905',ppsf:114.98,cat:'core'},{zip:'79849',ppsf:123.21,cat:'suburb'},{zip:'79915',ppsf:125.74,cat:'core'},
+{zip:'79907',ppsf:131.68,cat:'core'},{zip:'79904',ppsf:133.74,cat:'core'},{zip:'79903',ppsf:136.38,cat:'core'},
+{zip:'79935',ppsf:139.37,cat:'established'},{zip:'79925',ppsf:139.72,cat:'established'},{zip:'79924',ppsf:139.75,cat:'established'},
+{zip:'79836',ppsf:148.35,cat:'established'},{zip:'79936',ppsf:148.43,cat:'established'},{zip:'79930',ppsf:150.84,cat:'core'},
+{zip:'79927',ppsf:155.29,cat:'established'},{zip:'79938',ppsf:156.62,cat:'suburb'},{zip:'79934',ppsf:157.04,cat:'established'},
+{zip:'79821',ppsf:158.87,cat:'established'},{zip:'79835',ppsf:161.33,cat:'established'},{zip:'79928',ppsf:167.38,cat:'suburb'},
+{zip:'79912',ppsf:167.53,cat:'suburb'},{zip:'79932',ppsf:169.54,cat:'suburb'},{zip:'79902',ppsf:171.32,cat:'westside'},
+{zip:'79922',ppsf:178.66,cat:'westside'},{zip:'79911',ppsf:187.60,cat:'suburb'}
 ];
-function colorFor(m){const t=(m-65)/(98.5-65),c0=[230,241,251],c1=[4,44,83];
-  return 'rgb('+Math.round(c0[0]+(c1[0]-c0[0])*t)+','+Math.round(c0[1]+(c1[1]-c0[1])*t)+','+Math.round(c0[2]+(c1[2]-c0[2])*t)+')';}
+const CAT_COLOR = {core:CORAL, established:GOLD, suburb:TEAL, westside:VIOLET};
 new Chart(document.getElementById('chartZip'), {
   type:'bar',
-  data:{ labels:zipData.map(d=>d.zip), datasets:[{ data:zipData.map(d=>d.ppsf), backgroundColor:zipData.map(d=>colorFor(d.min)), borderRadius:4 }] },
+  data:{ labels:zipData.map(d=>d.zip), datasets:[{ data:zipData.map(d=>d.ppsf), backgroundColor:zipData.map(d=>CAT_COLOR[d.cat]), borderRadius:4, borderWidth:2, borderColor:'#14151A' }] },
   options:{ indexAxis:'y', responsive:true, maintainAspectRatio:false,
-    plugins:{ legend:{display:false}, tooltip:{callbacks:{label:(c)=>'$'+c.parsed.x.toFixed(0)+'/sqft, tract minority '+zipData[c.dataIndex].min+'%'}} },
-    scales:{ x:{ title:{display:true,text:'Median sold $/sqft'}, grid:{color:'#e1e0d9'} }, y:{ grid:{display:false} } }
+    plugins:{ legend:{display:false}, tooltip:{callbacks:{label:(c)=>'$'+c.parsed.x.toFixed(0)+'/sqft'}} },
+    scales:{ x:{ title:{display:true,text:'Median sold $/sqft'}, grid:{color:'#E4E1D6'} }, y:{ grid:{display:false} } }
   }
 });
 
-const yrs=[2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024];
-const low=[8.375,8.408,7.798,7.683,8.619,9.165,9.935,10.867,11.038,11.688,10.863,10.752,10.413,10.902,10.261];
-const mid=[7.410,7.646,6.885,7.473,8.238,8.483,8.350,9.052,8.883,8.494,7.209,7.288,6.921,7.174,7.942];
-const hi=[7.548,7.413,6.979,7.015,7.588,7.940,8.613,8.979,9.362,9.292,8.159,8.156,7.197,6.938,7.156];
+/* ============ 2. Repeat-sales % CAGR by quintile ============ */
+new Chart(document.getElementById('chartCagr'), {
+  type:'bar',
+  data:{ labels:['Cheapest 1/5','2nd','3rd (middle)','4th','Priciest 1/5'],
+    datasets:[{ label:'Avg annual price growth', data:[7.2,6.1,5.5,6.7,6.6],
+      backgroundColor:[CORAL,'#E9C9C9','#E9C9C9','#E9C9C9',VIOLET], borderRadius:4, borderWidth:2, borderColor:'#14151A' }] },
+  options:{ responsive:true, maintainAspectRatio:false,
+    plugins:{ legend:{display:false}, tooltip:{callbacks:{label:(c)=>c.parsed.y+'%/year'}} },
+    scales:{ y:{ title:{display:true,text:'Avg annual price growth (%)'}, grid:{color:'#E4E1D6'} }, x:{ grid:{display:false} } }
+  }
+});
+
+/* ============ 3. Repeat-sales $ per year by quintile ============ */
+new Chart(document.getElementById('chartDollar'), {
+  type:'bar',
+  data:{ labels:['Cheapest 1/5','2nd','3rd (middle)','4th','Priciest 1/5'],
+    datasets:[{ label:'Avg dollar growth/year', data:[7708,10575,8979,14802,23006],
+      backgroundColor:[CORAL,'#E9C9C9','#E9C9C9','#E9C9C9',VIOLET], borderRadius:4, borderWidth:2, borderColor:'#14151A' }] },
+  options:{ responsive:true, maintainAspectRatio:false,
+    plugins:{ legend:{display:false}, tooltip:{callbacks:{label:(c)=>'$'+c.parsed.y.toLocaleString()+'/year'}} },
+    scales:{ y:{ title:{display:true,text:'Avg dollar gain per year ($)'}, grid:{color:'#E4E1D6'}, ticks:{callback:(v)=>'$'+v.toLocaleString()} }, x:{ grid:{display:false} } }
+  }
+});
+
+/* ============ 4. Vacancy by tier 2010-2024 ============ */
+const vYrs=[2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024];
+const vLow=[8.375,8.408,7.798,7.683,8.619,9.165,9.935,10.867,11.038,11.688,10.863,10.752,10.413,10.902,10.261];
+const vMid=[7.410,7.646,6.885,7.473,8.238,8.483,8.350,9.052,8.883,8.494,7.209,7.288,6.921,7.174,7.942];
+const vHi=[7.548,7.413,6.979,7.015,7.588,7.940,8.613,8.979,9.362,9.292,8.159,8.156,7.197,6.938,7.156];
 new Chart(document.getElementById('chartVacancy'), {
   type:'line',
-  data:{ labels:yrs, datasets:[
-    {label:'Lowest value tier', data:low, borderColor:'#A34432', backgroundColor:'#A34432', borderWidth:2, pointRadius:2, tension:.2},
-    {label:'Mid value tier', data:mid, borderColor:'#B9822E', backgroundColor:'#B9822E', borderWidth:2, pointRadius:2, tension:.2, borderDash:[6,3]},
-    {label:'Highest value tier', data:hi, borderColor:'#2C6072', backgroundColor:'#2C6072', borderWidth:2, pointRadius:2, tension:.2, borderDash:[2,2]}
+  data:{ labels:vYrs, datasets:[
+    {label:'Cheapest third', data:vLow, borderColor:CORAL, backgroundColor:CORAL, borderWidth:3, pointRadius:2, tension:.2},
+    {label:'Middle third', data:vMid, borderColor:GOLD_DEEP, backgroundColor:GOLD_DEEP, borderWidth:2, pointRadius:2, tension:.2, borderDash:[6,3]},
+    {label:'Priciest third', data:vHi, borderColor:VIOLET, backgroundColor:VIOLET, borderWidth:2, pointRadius:2, tension:.2, borderDash:[2,2]}
   ]},
   options:{ responsive:true, maintainAspectRatio:false,
     plugins:{ legend:{display:false}, tooltip:{callbacks:{label:(c)=>c.dataset.label+': '+c.parsed.y.toFixed(1)+'%'}} },
-    scales:{ y:{ title:{display:true,text:'Vacancy rate (%)'}, grid:{color:'#e1e0d9'} }, x:{ grid:{display:false} } }
+    scales:{ y:{ title:{display:true,text:'Vacancy rate (%)'}, grid:{color:'rgba(255,255,255,0.15)'}, ticks:{color:'#C9C7D9'} }, x:{ grid:{display:false}, ticks:{color:'#C9C7D9'} } }
   }
 });
 
+/* ============ 5. New vs resale gap ============ */
+new Chart(document.getElementById('chartGap'), {
+  type:'line',
+  data:{ labels:['2021','2022','2023','2024'], datasets:[
+    {label:'New home', data:[126.95,147.14,162.11,169.11], borderColor:VIOLET, backgroundColor:VIOLET, borderWidth:3, pointRadius:5, tension:.15},
+    {label:'Resale', data:[114.84,133.00,142.34,144.73], borderColor:INKSOFT, backgroundColor:INKSOFT, borderWidth:2, pointRadius:4, tension:.15, borderDash:[6,3]}
+  ]},
+  options:{ responsive:true, maintainAspectRatio:false,
+    plugins:{ legend:{display:false}, tooltip:{callbacks:{label:(c)=>c.dataset.label+': $'+c.parsed.y.toFixed(0)+'/sqft'}} },
+    scales:{ y:{ title:{display:true,text:'Median sold $/sqft'}, grid:{color:'#E4E1D6'} }, x:{ grid:{display:false} } }
+  }
+});
+
+/* ============ 5b. Linked moves: real MLS prices ============ */
+new Chart(document.getElementById('chartChain'), {
+  type:'bar',
+  data:{ labels:['Home they left','Home they moved into'],
+    datasets:[{ data:[250000,310000], backgroundColor:[INKSOFT,VIOLET], borderRadius:4, borderWidth:2, borderColor:'#14151A' }] },
+  options:{ indexAxis:'y', responsive:true, maintainAspectRatio:false,
+    plugins:{ legend:{display:false}, tooltip:{callbacks:{label:(c)=>'$'+c.parsed.x.toLocaleString()+' (median)'}} },
+    scales:{ x:{ title:{display:true,text:'Median real MLS sold price ($)'}, grid:{color:'#E4E1D6'}, ticks:{callback:(v)=>'$'+(v/1000)+'k'} }, y:{ grid:{display:false} } }
+  }
+});
+
+/* ============ 5c. Percentile ladder: core vs new suburbs ============ */
+new Chart(document.getElementById('chartPercentile'), {
+  type:'bar',
+  data:{ labels:['10th pct','25th pct','Median','75th pct','90th pct','95th pct'],
+    datasets:[
+      { label:'Historic core', data:[88.9,107.8,131.2,156.9,178.0,192.9], backgroundColor:CORAL, borderRadius:4, borderWidth:2, borderColor:'#14151A' },
+      { label:'New suburbs', data:[130.0,146.4,163.6,178.6,194.0,207.9], backgroundColor:TEAL, borderRadius:4, borderWidth:2, borderColor:'#14151A' }
+    ] },
+  options:{ responsive:true, maintainAspectRatio:false,
+    plugins:{ legend:{display:false}, tooltip:{callbacks:{label:(c)=>c.dataset.label+': $'+c.parsed.y.toFixed(0)+'/sqft'}} },
+    scales:{ y:{ title:{display:true,text:'Sale price ($/sqft)'}, grid:{color:'#E4E1D6'} }, x:{ grid:{display:false} } }
+  }
+});
+
+/* ============ 5d. Discount vs renovation cost ============ */
+new Chart(document.getElementById('chartRenoMath'), {
+  type:'bar',
+  data:{ labels:['Price discount (old vs. new)','Light cosmetic refresh','Mid-range remodel','Full gut renovation'],
+    datasets:[{
+      data:[[0,44880],[20400,81600],[54400,204000],[81600,340000]],
+      backgroundColor:[VIOLET,INKSOFT,INKSOFT,INKSOFT], borderRadius:4, borderWidth:2, borderColor:'#14151A'
+    }] },
+  options:{ indexAxis:'y', responsive:true, maintainAspectRatio:false,
+    plugins:{ legend:{display:false}, tooltip:{callbacks:{label:(c)=>'$'+c.raw[0].toLocaleString()+' \u2013 $'+c.raw[1].toLocaleString()}} },
+    scales:{ x:{ title:{display:true,text:'Dollars, typical 1,360 sqft home'}, grid:{color:'#E4E1D6'}, ticks:{callback:(v)=>'$'+(v/1000)+'k'} }, y:{ grid:{display:false} } }
+  }
+});
+
+/* ============ 6. Permits ============ */
 const pYrs=[]; for(let y=1988;y<=2025;y++) pYrs.push(y);
 const total=[1650,1701,2092,1865,2651,2567,3687,2530,3050,2529,3124,3770,2913,3085,3351,5024,3253,4248,3166,3855,3603,2881,4062,3837,3992,3679,2798,4251,2843,2917,2209,2286,1762,2233,1968,1852,1887,1722];
 const sf=[1553,1593,1832,1587,2168,2184,2217,2160,2068,2132,2873,3046,2589,2964,3180,4582,2720,3252,2903,2666,2521,2330,2478,2966,2815,2271,2021,2282,2014,2020,1588,1873,1570,1961,1649,1572,1644,1466];
 new Chart(document.getElementById('chartPermits'), {
   type:'bar',
   data:{ labels:pYrs, datasets:[
-    {label:'Single-family', data:sf, backgroundColor:'#2C6072', borderRadius:2, stack:'s'},
-    {label:'Multifamily + other', data:total.map((t,i)=>t-sf[i]), backgroundColor:'#B9822E', borderRadius:2, stack:'s'}
+    {label:'Single-family', data:sf, backgroundColor:TEAL, borderRadius:2, stack:'s'},
+    {label:'Multifamily + other', data:total.map((t,i)=>t-sf[i]), backgroundColor:GOLD_DEEP, borderRadius:2, stack:'s'}
   ]},
   options:{ responsive:true, maintainAspectRatio:false,
     plugins:{ legend:{display:false}, tooltip:{ mode:'index', callbacks:{label:(c)=>c.dataset.label+': '+c.parsed.y.toLocaleString()}} },
-    scales:{ y:{ title:{display:true,text:'Annual permits'}, grid:{color:'#e1e0d9'} }, x:{ grid:{display:false}, ticks:{ maxTicksLimit:12 } } }
+    scales:{ y:{ title:{display:true,text:'Annual permits'}, grid:{color:'#E4E1D6'} }, x:{ grid:{display:false}, ticks:{ maxTicksLimit:12 } } }
   }
 });
 
+/* ============ scroll dot nav ============ */
+const dotLinks = document.querySelectorAll('nav.dots a');
+const dotSecs = [...dotLinks].map(l=>document.querySelector(l.getAttribute('href')));
+window.addEventListener('scroll', ()=>{
+  let idx=0;
+  dotSecs.forEach((s,i)=>{ if(s && s.getBoundingClientRect().top < 200) idx=i; });
+  dotLinks.forEach(l=>l.classList.remove('active'));
+  dotLinks[idx].classList.add('active');
+});
 
+/* ============ policy map ============ */
 const TRACT_DATA = {"48141000101":{"value":127868,"vacancy":4.4,"owner_occ":61.4,"renter_occ":38.6,"yrbuilt":1970,"neighborhood":"Northeast","rehab":false,"missingmiddle":false,"permitting":false,"inclusionary":false,"fairlending":false},"48141000106":{"value":137011,"vacancy":7.2,"owner_occ":87.4,"renter_occ":12.6,"yrbuilt":1982,"neighborhood":"Northeast","rehab":false,"missingmiddle":false,"permitting":false,"inclusionary":false,"fairlending":false},"48141000107":{"value":106163,"vacancy":10.6,"owner_occ":67.3,"renter_occ":32.7,"yrbuilt":1972,"neighborhood":"Northeast","rehab":false,"missingmiddle":false,"permitting":false,"inclusionary":false,"fairlending":true},"48141000108":{"value":121423,"vacancy":12.8,"owner_occ":49.3,"renter_occ":50.7,"yrbuilt":1978,"neighborhood":"Northeast","rehab":false,"missingmiddle":false,"permitting":false,"inclusionary":false,"fairlending":false},"48141000109":{"value":99957,"vacancy":11.3,"owner_occ":78.5,"renter_occ":21.5,"yrbuilt":1960,"neighborhood":"Northeast","rehab":true,"missingmiddle":false,"permitting":true,"inclusionary":false,"fairlending":true},"48141000110":{"value":106341,"vacancy":7.5,"owner_occ":39.0,"renter_occ":61.0,"yrbuilt":1961,"neighborhood":"Northeast","rehab":false,"missingmiddle":true,"permitting":true,"inclusionary":false,"fairlending":true},"48141000111":{"value":134993,"vacancy":5.5,"owner_occ":48.3,"renter_occ":51.7,"yrbuilt":1970,"neighborhood":"Northeast","rehab":false,"missingmiddle":false,"permitting":false,"inclusionary":false,"fairlending":false},"48141000112":{"value":106104,"vacancy":7.8,"owner_occ":74.5,"renter_occ":25.5,"yrbuilt":1963,"neighborhood":"Northeast","rehab":false,"missingmiddle":false,"permitting":true,"inclusionary":false,"fairlending":true},"48141000204":{"value":113630,"vacancy":3.7,"owner_occ":58.2,"renter_occ":41.8,"yrbuilt":1966,"neighborhood":"Northeast","rehab":false,"missingmiddle":false,"permitting":false,"inclusionary":false,"fairlending":false},"48141000205":{"value":100300,"vacancy":15.9,"owner_occ":30.9,"renter_occ":69.1,"yrbuilt":1965,"neighborhood":"Northeast","rehab":true,"missingmiddle":true,"permitting":true,"inclusionary":false,"fairlending":true},"48141000206":{"value":100736,"vacancy":3.9,"owner_occ":74.4,"renter_occ":25.6,"yrbuilt":1957,"neighborhood":"Northeast","rehab":false,"missingmiddle":false,"permitting":true,"inclusionary":false,"fairlending":true},"48141000207":{"value":112679,"vacancy":14.7,"owner_occ":61.8,"renter_occ":38.2,"yrbuilt":1986,"neighborhood":"Northeast","rehab":false,"missingmiddle":false,"permitting":false,"inclusionary":false,"fairlending":false},"48141000208":{"value":114063,"vacancy":5.0,"owner_occ":67.4,"renter_occ":32.6,"yrbuilt":1994,"neighborhood":"Northeast","rehab":false,"missingmiddle":false,"permitting":false,"inclusionary":false,"fairlending":false},"48141000301":{"value":94048,"vacancy":14.5,"owner_occ":38.4,"renter_occ":61.6,"yrbuilt":1959,"neighborhood":"Northeast","rehab":true,"missingmiddle":true,"permitting":true,"inclusionary":false,"fairlending":true},"48141000302":{"value":94841,"vacancy":9.4,"owner_occ":56.0,"renter_occ":44.0,"yrbuilt":1954,"neighborhood":"Northeast","rehab":false,"missingmiddle":true,"permitting":true,"inclusionary":false,"fairlending":true},"48141000401":{"value":177727,"vacancy":13.4,"owner_occ":61.1,"renter_occ":38.9,"yrbuilt":1971,"neighborhood":"McKelligon Canyon","rehab":false,"missingmiddle":false,"permitting":false,"inclusionary":false,"fairlending":false},"48141000403":{"value":132788,"vacancy":3.9,"owner_occ":49.9,"renter_occ":50.1,"yrbuilt":1972,"neighborhood":"Northeast","rehab":false,"missingmiddle":false,"permitting":false,"inclusionary":false,"fairlending":false},"48141000404":{"value":80364,"vacancy":26.8,"owner_occ":11.4,"renter_occ":88.6,"yrbuilt":1965,"neighborhood":"Northeast","rehab":true,"missingmiddle":true,"permitting":true,"inclusionary":false,"fairlending":true},"48141000600":{"value":113840,"vacancy":7.2,"owner_occ":52.4,"renter_occ":47.6,"yrbuilt":1959,"neighborhood":"Northeast","rehab":false,"missingmiddle":false,"permitting":true,"inclusionary":false,"fairlending":false},"48141000800":{"value":117706,"vacancy":8.5,"owner_occ":39.5,"renter_occ":60.5,"yrbuilt":1955,"neighborhood":"Northeast","rehab":false,"missingmiddle":false,"permitting":true,"inclusionary":false,"fairlending":false},"48141000900":{"value":106864,"vacancy":21.1,"owner_occ":42.9,"renter_occ":57.1,"yrbuilt":1943,"neighborhood":"Franklin Mountains","rehab":true,"missingmiddle":true,"permitting":true,"inclusionary":false,"fairlending":true},"48141001001":{"value":116388,"vacancy":8.1,"owner_occ":64.2,"renter_occ":35.8,"yrbuilt":1941,"neighborhood":"Manhattan Heights","rehab":false,"missingmiddle":false,"permitting":true,"inclusionary":false,"fairlending":false},"48141001002":{"value":110130,"vacancy":8.9,"owner_occ":57.3,"renter_occ":42.7,"yrbuilt":1940,"neighborhood":"Manhattan Heights","rehab":false,"missingmiddle":true,"permitting":true,"inclusionary":false,"fairlending":true},"48141001104":{"value":164992,"vacancy":12.6,"owner_occ":42.3,"renter_occ":57.7,"yrbuilt":1968,"neighborhood":"Sunland Park North/Remcon","rehab":false,"missingmiddle":false,"permitting":false,"inclusionary":false,"fairlending":false},"48141001107":{"value":211103,"vacancy":8.3,"owner_occ":67.3,"renter_occ":32.7,"yrbuilt":1988,"neighborhood":"Northwest","rehab":false,"missingmiddle":false,"permitting":false,"inclusionary":false,"fairlending":false},"48141001109":{"value":277707,"vacancy":7.0,"owner_occ":89.7,"renter_occ":10.3,"yrbuilt":1981,"neighborhood":"Coronado Country Club","rehab":false,"missingmiddle":false,"permitting":false,"inclusionary":false,"fairlending":false},"48141001110":{"value":277911,"vacancy":13.5,"owner_occ":54.8,"renter_occ":45.2,"yrbuilt":1981,"neighborhood":"Upper Mesa Hills","rehab":false,"missingmiddle":false,"permitting":false,"inclusionary":false,"fairlending":false},"48141001111":{"value":383888,"vacancy":20.1,"owner_occ":21.9,"renter_occ":78.1,"yrbuilt":1997,"neighborhood":"South Mesa Hills","rehab":false,"missingmiddle":false,"permitting":false,"inclusionary":true,"fairlending":false},"48141001112":{"value":184433,"vacancy":9.5,"owner_occ":56.6,"renter_occ":43.4,"yrbuilt":1980,"neighborhood":"Three Hills/Kohlberg","rehab":false,"missingmiddle":false,"permitting":false,"inclusionary":false,"fairlending":false},"48141001113":{"value":169089,"vacancy":13.9,"owner_occ":35.2,"renter_occ":64.8,"yrbuilt":1969,"neighborhood":"Coronado","rehab":false,"missingmiddle":false,"permitting":false,"inclusionary":false,"fairlending":false},"48141001114":{"value":150323,"vacancy":14.7,"owner_occ":26.0,"renter_occ":74.0,"yrbuilt":1964,"neighborhood":"Sunland Park Mall/Crestmont","rehab":false,"missingmiddle":false,"permitting":true,"inclusionary":false,"fairlending":false},"48141001115":{"value":145477,"vacancy":11.6,"owner_occ":11.2,"renter_occ":88.8,"yrbuilt":1983,"neighborhood":"Montecillo","rehab":false,"missingmiddle":false,"permitting":false,"inclusionary":false,"fairlending":false},"48141001201":{"value":126088,"vacancy":14.3,"owner_occ":46.9,"renter_occ":53.1,"yrbuilt":1977,"neighborhood":"Sunset View/Montoya Heights","rehab":false,"missingmiddle":false,"permitting":false,"inclusionary":false,"fairlending":false},"48141001202":{"value":153343,"vacancy":10.2,"owner_occ":64.9,"renter_occ":35.1,"yrbuilt":1989,"neighborhood":"Three Hills/Kohlberg","rehab":false,"missingmiddle":false,"permitting":false,"inclusionary":true,"fairlending":false},"48141001203":{"value":112752,"vacancy":25.2,"owner_occ":40.9,"renter_occ":59.1,"yrbuilt":1969,"neighborhood":"Doniphan Industrial","rehab":false,"missingmiddle":false,"permitting":false,"inclusionary":false,"fairlending":false},"48141001301":{"value":271493,"vacancy":8.9,"owner_occ":74.2,"renter_occ":25.8,"yrbuilt":1977,"neighborhood":"Upper Valley","rehab":false,"missingmiddle":false,"permitting":false,"inclusionary":false,"fairlending":false},"48141001302":{"value":289408,"vacancy":11.1,"owner_occ":90.7,"renter_occ":9.3,"yrbuilt":1975,"neighborhood":"Upper Valley","rehab":false,"missingmiddle":false,"permitting":false,"inclusionary":false,"fairlending":false},"48141001400":{"value":96206,"vacancy":21.1,"owner_occ":12.4,"renter_occ":87.6,"yrbuilt":1952,"neighborhood":"Old ASARCO and Smeltertown","rehab":true,"missingmiddle":true,"permitting":true,"inclusionary":false,"fairlending":true},"48141001501":{"value":240431,"vacancy":11.9,"owner_occ":55.7,"renter_occ":44.3,"yrbuilt":1957,"neighborhood":"Mission Hills","rehab":false,"missingmiddle":false,"permitting":true,"inclusionary":false,"fairlending":false},"48141001502":{"value":283538,"vacancy":21.6,"owner_occ":61.5,"renter_occ":38.5,"yrbuilt":1937,"neighborhood":"UTEP and Kern Place","rehab":false,"missingmiddle":false,"permitting":true,"inclusionary":false,"fairlending":false},"48141001600":{"value":175145,"vacancy":12.8,"owner_occ":19.3,"renter_occ":80.7,"yrbuilt":1922,"neighborhood":"Sunset Heights","rehab":false,"missingmiddle":false,"permitting":true,"inclusionary":false,"fairlending":false},"48141001700":{"value":112659,"vacancy":26.6,"owner_occ":3.7,"renter_occ":96.3,"yrbuilt":1926,"neighborhood":"Downtown","rehab":false,"missingmiddle":false,"permitting":true,"inclusionary":false,"fairlending":false},"48141001703":{"value":29104,"vacancy":null,"owner_occ":null,"renter_occ":null,"yrbuilt":1994,"neighborhood":null,"rehab":false,"missingmiddle":false,"permitting":false,"inclusionary":false,"fairlending":true},"48141001705":{"value":498897,"vacancy":null,"owner_occ":null,"renter_occ":null,"yrbuilt":1978,"neighborhood":null,"rehab":false,"missingmiddle":false,"permitting":false,"inclusionary":false,"fairlending":false},"48141001800":{"value":55282,"vacancy":14.0,"owner_occ":9.1,"renter_occ":90.9,"yrbuilt":1943,"neighborhood":"Chihuahuita","rehab":true,"missingmiddle":true,"permitting":true,"inclusionary":false,"fairlending":true},"48141001900":{"value":80370,"vacancy":23.2,"owner_occ":3.4,"renter_occ":96.6,"yrbuilt":1935,"neighborhood":"Segundo Barrio","rehab":true,"missingmiddle":true,"permitting":true,"inclusionary":false,"fairlending":true},"48141002000":{"value":64653,"vacancy":4.6,"owner_occ":18.2,"renter_occ":81.8,"yrbuilt":1933,"neighborhood":"Segundo Barrio","rehab":false,"missingmiddle":true,"permitting":true,"inclusionary":false,"fairlending":true},"48141002100":{"value":87145,"vacancy":35.0,"owner_occ":13.2,"renter_occ":86.8,"yrbuilt":1931,"neighborhood":"Magoffin","rehab":true,"missingmiddle":true,"permitting":true,"inclusionary":false,"fairlending":true},"48141002201":{"value":173023,"vacancy":9.1,"owner_occ":41.9,"renter_occ":58.1,"yrbuilt":1943,"neighborhood":"Pill Hill","rehab":false,"missingmiddle":false,"permitting":true,"inclusionary":false,"fairlending":false},"48141002202":{"value":132768,"vacancy":13.2,"owner_occ":29.2,"renter_occ":70.8,"yrbuilt":1918,"neighborhood":"El Paso High","rehab":false,"missingmiddle":false,"permitting":true,"inclusionary":false,"fairlending":false},"48141002300":{"value":116646,"vacancy":19.4,"owner_occ":56.6,"renter_occ":43.4,"yrbuilt":1938,"neighborhood":"Manhattan Heights","rehab":false,"missingmiddle":false,"permitting":true,"inclusionary":false,"fairlending":false},"48141002400":{"value":126456,"vacancy":16.3,"owner_occ":63.5,"renter_occ":36.5,"yrbuilt":1928,"neighborhood":"Manhattan Heights","rehab":false,"missingmiddle":false,"permitting":true,"inclusionary":false,"fairlending":false},"48141002500":{"value":124881,"vacancy":11.0,"owner_occ":63.1,"renter_occ":36.9,"yrbuilt":1939,"neighborhood":"Manhattan Heights","rehab":false,"missingmiddle":false,"permitting":true,"inclusionary":false,"fairlending":false},"48141002600":{"value":99363,"vacancy":16.6,"owner_occ":65.3,"renter_occ":34.7,"yrbuilt":1935,"neighborhood":"Five Points","rehab":true,"missingmiddle":false,"permitting":true,"inclusionary":false,"fairlending":true},"48141002800":{"value":83104,"vacancy":20.2,"owner_occ":26.2,"renter_occ":73.8,"yrbuilt":1939,"neighborhood":"Chamizal","rehab":true,"missingmiddle":true,"permitting":true,"inclusionary":false,"fairlending":true},"48141002900":{"value":80271,"vacancy":13.1,"owner_occ":30.6,"renter_occ":69.4,"yrbuilt":1949,"neighborhood":"Chamizal","rehab":true,"missingmiddle":true,"permitting":true,"inclusionary":false,"fairlending":true},"48141003000":{"value":88031,"vacancy":12.8,"owner_occ":41.2,"renter_occ":58.8,"yrbuilt":1953,"neighborhood":"Washington Park/Zoo/Coliseum","rehab":true,"missingmiddle":true,"permitting":true,"inclusionary":false,"fairlending":true},"48141003100":{"value":97724,"vacancy":10.9,"owner_occ":62.7,"renter_occ":37.3,"yrbuilt":1952,"neighborhood":"Fox Plaza","rehab":true,"missingmiddle":true,"permitting":true,"inclusionary":false,"fairlending":true},"48141003200":{"value":82021,"vacancy":9.8,"owner_occ":55.7,"renter_occ":44.3,"yrbuilt":1954,"neighborhood":"Medical Center of the Americas","rehab":false,"missingmiddle":true,"permitting":true,"inclusionary":false,"fairlending":true},"48141003300":{"value":114286,"vacancy":15.5,"owner_occ":68.7,"renter_occ":31.3,"yrbuilt":1950,"neighborhood":"Lincoln Park","rehab":false,"missingmiddle":false,"permitting":true,"inclusionary":false,"fairlending":false},"48141003402":{"value":109139,"vacancy":9.9,"owner_occ":40.9,"renter_occ":59.1,"yrbuilt":1954,"neighborhood":"Airport","rehab":false,"missingmiddle":true,"permitting":true,"inclusionary":false,"fairlending":true},"48141003403":{"value":141651,"vacancy":4.1,"owner_occ":32.5,"renter_occ":67.5,"yrbuilt":1956,"neighborhood":"Cielo Vista","rehab":false,"missingmiddle":false,"permitting":true,"inclusionary":false,"fairlending":false},"48141003404":{"value":194986,"vacancy":16.5,"owner_occ":68.9,"renter_occ":31.1,"yrbuilt":1965,"neighborhood":"The Fountains at Farrah","rehab":false,"missingmiddle":false,"permitting":false,"inclusionary":false,"fairlending":false},"48141003501":{"value":127742,"vacancy":6.8,"owner_occ":51.2,"renter_occ":48.8,"yrbuilt":1953,"neighborhood":"Western Refinery","rehab":false,"missingmiddle":false,"permitting":true,"inclusionary":false,"fairlending":false},"48141003502":{"value":120777,"vacancy":8.5,"owner_occ":47.7,"renter_occ":52.3,"yrbuilt":1955,"neighborhood":"Mission Valley","rehab":false,"missingmiddle":false,"permitting":true,"inclusionary":false,"fairlending":false},"48141003601":{"value":104134,"vacancy":10.8,"owner_occ":57.2,"renter_occ":42.8,"yrbuilt":1953,"neighborhood":"Fox Plaza","rehab":false,"missingmiddle":true,"permitting":true,"inclusionary":false,"fairlending":true},"48141003602":{"value":93948,"vacancy":11.1,"owner_occ":39.6,"renter_occ":60.4,"yrbuilt":1950,"neighborhood":"Ascarate Park","rehab":true,"missingmiddle":true,"permitting":true,"inclusionary":false,"fairlending":true},"48141003701":{"value":96670,"vacancy":5.8,"owner_occ":55.1,"renter_occ":44.9,"yrbuilt":1958,"neighborhood":"Lakeside","rehab":false,"missingmiddle":true,"permitting":true,"inclusionary":false,"fairlending":true},"48141003702":{"value":96063,"vacancy":10.3,"owner_occ":63.3,"renter_occ":36.7,"yrbuilt":1959,"neighborhood":"Lakeside","rehab":false,"missingmiddle":false,"permitting":true,"inclusionary":false,"fairlending":true},"48141003801":{"value":111137,"vacancy":7.0,"owner_occ":66.0,"renter_occ":34.0,"yrbuilt":1968,"neighborhood":"San Jose/Playa Neighborhood","rehab":false,"missingmiddle":false,"permitting":false,"inclusionary":false,"fairlending":true},"48141003803":{"value":116201,"vacancy":5.8,"owner_occ":64.3,"renter_occ":35.7,"yrbuilt":1966,"neighborhood":"San Jose/Playa Neighborhood","rehab":false,"missingmiddle":false,"permitting":false,"inclusionary":false,"fairlending":false},"48141003804":{"value":99314,"vacancy":6.3,"owner_occ":52.5,"renter_occ":47.5,"yrbuilt":1963,"neighborhood":"Mission Valley","rehab":false,"missingmiddle":true,"permitting":true,"inclusionary":false,"fairlending":true},"48141003901":{"value":102010,"vacancy":9.2,"owner_occ":45.2,"renter_occ":54.8,"yrbuilt":1963,"neighborhood":"Mission Valley","rehab":false,"missingmiddle":true,"permitting":true,"inclusionary":false,"fairlending":true},"48141003902":{"value":95619,"vacancy":9.8,"owner_occ":72.6,"renter_occ":27.4,"yrbuilt":1966,"neighborhood":"Mission Valley","rehab":false,"missingmiddle":false,"permitting":false,"inclusionary":false,"fairlending":true},"48141003903":{"value":100696,"vacancy":12.2,"owner_occ":39.1,"renter_occ":60.9,"yrbuilt":1973,"neighborhood":"Mission Valley","rehab":true,"missingmiddle":true,"permitting":false,"inclusionary":false,"fairlending":true},"48141004002":{"value":113374,"vacancy":2.6,"owner_occ":71.9,"renter_occ":28.1,"yrbuilt":1986,"neighborhood":"Mission Valley","rehab":false,"missingmiddle":false,"permitting":false,"inclusionary":false,"fairlending":false},"48141004003":{"value":110779,"vacancy":6.4,"owner_occ":45.4,"renter_occ":54.6,"yrbuilt":1987,"neighborhood":"Mission Valley","rehab":false,"missingmiddle":true,"permitting":false,"inclusionary":false,"fairlending":true},"48141004004":{"value":116113,"vacancy":3.5,"owner_occ":70.9,"renter_occ":29.1,"yrbuilt":1977,"neighborhood":"Mission Valley","rehab":false,"missingmiddle":false,"permitting":false,"inclusionary":false,"fairlending":false},"48141004103":{"value":116644,"vacancy":5.0,"owner_occ":55.6,"renter_occ":44.4,"yrbuilt":1977,"neighborhood":"Mission Valley","rehab":false,"missingmiddle":false,"permitting":false,"inclusionary":false,"fairlending":false},"48141004104":{"value":111454,"vacancy":9.1,"owner_occ":71.9,"renter_occ":28.1,"yrbuilt":1969,"neighborhood":"Mission Valley","rehab":false,"missingmiddle":false,"permitting":false,"inclusionary":false,"fairlending":true},"48141004105":{"value":103523,"vacancy":12.2,"owner_occ":44.3,"renter_occ":55.7,"yrbuilt":1963,"neighborhood":"Mission Valley","rehab":true,"missingmiddle":true,"permitting":true,"inclusionary":false,"fairlending":true},"48141004106":{"value":113521,"vacancy":3.3,"owner_occ":60.0,"renter_occ":40.0,"yrbuilt":1963,"neighborhood":"Mission Valley","rehab":false,"missingmiddle":false,"permitting":true,"inclusionary":false,"fairlending":false},"48141004107":{"value":109849,"vacancy":3.9,"owner_occ":84.7,"renter_occ":15.3,"yrbuilt":1958,"neighborhood":"Mission Valley","rehab":false,"missingmiddle":false,"permitting":true,"inclusionary":false,"fairlending":true},"48141004201":{"value":103429,"vacancy":9.3,"owner_occ":72.8,"renter_occ":27.2,"yrbuilt":1952,"neighborhood":"Hacienda Heights","rehab":false,"missingmiddle":false,"permitting":true,"inclusionary":false,"fairlending":true},"48141004202":{"value":102032,"vacancy":5.9,"owner_occ":56.0,"renter_occ":44.0,"yrbuilt":1955,"neighborhood":"Mission Valley","rehab":false,"missingmiddle":true,"permitting":true,"inclusionary":false,"fairlending":true},"48141004303":{"value":159184,"vacancy":3.5,"owner_occ":76.8,"renter_occ":23.2,"yrbuilt":1961,"neighborhood":"Album Park","rehab":false,"missingmiddle":false,"permitting":true,"inclusionary":false,"fairlending":false},"48141004307":{"value":185053,"vacancy":3.4,"owner_occ":68.4,"renter_occ":31.6,"yrbuilt":1978,"neighborhood":"Eastside","rehab":false,"missingmiddle":false,"permitting":false,"inclusionary":false,"fairlending":false},"48141004309":{"value":165753,"vacancy":2.1,"owner_occ":43.8,"renter_occ":56.2,"yrbuilt":1982,"neighborhood":"Eastside","rehab":false,"missingmiddle":false,"permitting":false,"inclusionary":false,"fairlending":false},"48141004310":{"value":143098,"vacancy":3.1,"owner_occ":51.3,"renter_occ":48.7,"yrbuilt":1966,"neighborhood":"Album Park","rehab":false,"missingmiddle":false,"permitting":false,"inclusionary":false,"fairlending":false},"48141004311":{"value":150269,"vacancy":8.8,"owner_occ":56.6,"renter_occ":43.4,"yrbuilt":1963,"neighborhood":"Album Park","rehab":false,"missingmiddle":false,"permitting":true,"inclusionary":false,"fairlending":false},"48141004312":{"value":197624,"vacancy":2.9,"owner_occ":52.9,"renter_occ":47.1,"yrbuilt":1973,"neighborhood":"Eastside","rehab":false,"missingmiddle":false,"permitting":false,"inclusionary":false,"fairlending":false},"48141004313":{"value":228490,"vacancy":12.8,"owner_occ":43.9,"renter_occ":56.1,"yrbuilt":1976,"neighborhood":"Vista Hills Country Club","rehab":false,"missingmiddle":false,"permitting":false,"inclusionary":false,"fairlending":false},"48141004314":{"value":134682,"vacancy":4.5,"owner_occ":54.8,"renter_occ":45.2,"yrbuilt":1984,"neighborhood":"Eastside Master Plan","rehab":false,"missingmiddle":false,"permitting":false,"inclusionary":false,"fairlending":false},"48141004316":{"value":133006,"vacancy":3.7,"owner_occ":49.2,"renter_occ":50.8,"yrbuilt":1987,"neighborhood":"Eastside Master Plan","rehab":false,"missingmiddle":false,"permitting":false,"inclusionary":false,"fairlending":false},"48141004317":{"value":184588,"vacancy":15.5,"owner_occ":6.3,"renter_occ":93.7,"yrbuilt":1962,"neighborhood":"Album Park","rehab":false,"missingmiddle":false,"permitting":true,"inclusionary":false,"fairlending":false},"48141004318":{"value":174785,"vacancy":4.8,"owner_occ":87.6,"renter_occ":12.4,"yrbuilt":1966,"neighborhood":"Album Park","rehab":false,"missingmiddle":false,"permitting":false,"inclusionary":false,"fairlending":false},"48141004319":{"value":154123,"vacancy":2.8,"owner_occ":88.7,"renter_occ":11.3,"yrbuilt":1990,"neighborhood":"Eastside Master Plan","rehab":false,"missingmiddle":false,"permitting":false,"inclusionary":true,"fairlending":false},"48141004320":{"value":121225,"vacancy":4.3,"owner_occ":72.1,"renter_occ":27.9,"yrbuilt":1985,"neighborhood":"Eastside Master Plan","rehab":false,"missingmiddle":false,"permitting":false,"inclusionary":false,"fairlending":false},"48141010101":{"value":240897,"vacancy":4.3,"owner_occ":0.0,"renter_occ":100.0,"yrbuilt":2012,"neighborhood":"Airport","rehab":false,"missingmiddle":false,"permitting":false,"inclusionary":true,"fairlending":false},"48141010203":{"value":119431,"vacancy":9.1,"owner_occ":65.9,"renter_occ":34.1,"yrbuilt":1982,"neighborhood":"County","rehab":false,"missingmiddle":false,"permitting":false,"inclusionary":false,"fairlending":false},"48141010207":{"value":134197,"vacancy":19.8,"owner_occ":59.1,"renter_occ":40.9,"yrbuilt":2006,"neighborhood":"Northeast","rehab":false,"missingmiddle":false,"permitting":false,"inclusionary":false,"fairlending":false},"48141010210":{"value":168048,"vacancy":10.2,"owner_occ":61.1,"renter_occ":38.9,"yrbuilt":2004,"neighborhood":"Northeast","rehab":false,"missingmiddle":false,"permitting":false,"inclusionary":true,"fairlending":false},"48141010211":{"value":209350,"vacancy":8.4,"owner_occ":86.8,"renter_occ":13.2,"yrbuilt":1997,"neighborhood":"Franklin Mountains","rehab":false,"missingmiddle":false,"permitting":false,"inclusionary":true,"fairlending":false},"48141010212":{"value":151448,"vacancy":3.4,"owner_occ":63.5,"renter_occ":36.5,"yrbuilt":2000,"neighborhood":"Northeast","rehab":false,"missingmiddle":false,"permitting":false,"inclusionary":true,"fairlending":false},"48141010213":{"value":277501,"vacancy":0.9,"owner_occ":91.2,"renter_occ":8.8,"yrbuilt":2006,"neighborhood":"Northwest","rehab":false,"missingmiddle":false,"permitting":false,"inclusionary":true,"fairlending":false},"48141010214":{"value":322000,"vacancy":16.1,"owner_occ":78.9,"renter_occ":21.1,"yrbuilt":1996,"neighborhood":"High Ridge","rehab":false,"missingmiddle":false,"permitting":false,"inclusionary":true,"fairlending":false},"48141010215":{"value":189089,"vacancy":9.3,"owner_occ":70.7,"renter_occ":29.3,"yrbuilt":1999,"neighborhood":"Northwest Commercial","rehab":false,"missingmiddle":false,"permitting":false,"inclusionary":true,"fairlending":false},"48141010216":{"value":158842,"vacancy":10.0,"owner_occ":54.5,"renter_occ":45.5,"yrbuilt":1997,"neighborhood":"Sunet View/Montoya Heights","rehab":false,"missingmiddle":false,"permitting":false,"inclusionary":true,"fairlending":false},"48141010217":{"value":185984,"vacancy":7.7,"owner_occ":85.2,"renter_occ":14.8,"yrbuilt":1996,"neighborhood":"Northwest","rehab":false,"missingmiddle":false,"permitting":false,"inclusionary":true,"fairlending":false},"48141010218":{"value":203032,"vacancy":14.2,"owner_occ":93.2,"renter_occ":6.8,"yrbuilt":2005,"neighborhood":"Upper Valley","rehab":false,"missingmiddle":false,"permitting":false,"inclusionary":true,"fairlending":false},"48141010219":{"value":241893,"vacancy":3.0,"owner_occ":87.3,"renter_occ":12.7,"yrbuilt":1998,"neighborhood":"Upper Valley","rehab":false,"missingmiddle":false,"permitting":false,"inclusionary":true,"fairlending":false},"48141010220":{"value":146950,"vacancy":8.1,"owner_occ":77.3,"renter_occ":22.7,"yrbuilt":2002,"neighborhood":"Franklin Mountains","rehab":false,"missingmiddle":false,"permitting":false,"inclusionary":true,"fairlending":false},"48141010221":{"value":147958,"vacancy":14.9,"owner_occ":69.6,"renter_occ":30.4,"yrbuilt":1984,"neighborhood":"Canutillo","rehab":false,"missingmiddle":false,"permitting":false,"inclusionary":false,"fairlending":false},"48141010222":{"value":135085,"vacancy":11.4,"owner_occ":79.0,"renter_occ":21.0,"yrbuilt":1988,"neighborhood":"County","rehab":false,"missingmiddle":false,"permitting":false,"inclusionary":false,"fairlending":false},"48141010303":{"value":148581,"vacancy":8.3,"owner_occ":66.3,"renter_occ":33.7,"yrbuilt":1975,"neighborhood":"Eastside","rehab":false,"missingmiddle":false,"permitting":false,"inclusionary":false,"fairlending":false},"48141010307":{"value":136433,"vacancy":7.2,"owner_occ":58.7,"renter_occ":41.3,"yrbuilt":1973,"neighborhood":"Eastside","rehab":false,"missingmiddle":false,"permitting":false,"inclusionary":false,"fairlending":false},"48141010311":{"value":132114,"vacancy":1.5,"owner_occ":69.0,"renter_occ":31.0,"yrbuilt":1984,"neighborhood":"Eastside","rehab":false,"missingmiddle":false,"permitting":false,"inclusionary":false,"fairlending":false},"48141010312":{"value":144685,"vacancy":4.5,"owner_occ":82.7,"renter_occ":17.3,"yrbuilt":1979,"neighborhood":"Eastside","rehab":false,"missingmiddle":false,"permitting":false,"inclusionary":false,"fairlending":false},"48141010316":{"value":136699,"vacancy":7.2,"owner_occ":56.6,"renter_occ":43.4,"yrbuilt":1976,"neighborhood":"Eastside","rehab":false,"missingmiddle":false,"permitting":false,"inclusionary":false,"fairlending":false},"48141010317":{"value":140239,"vacancy":10.1,"owner_occ":63.7,"renter_occ":36.3,"yrbuilt":1980,"neighborhood":"Eastside","rehab":false,"missingmiddle":false,"permitting":false,"inclusionary":false,"fairlending":false},"48141010319":{"value":95952,"vacancy":30.4,"owner_occ":90.5,"renter_occ":9.5,"yrbuilt":1999,"neighborhood":"County","rehab":true,"missingmiddle":false,"permitting":false,"inclusionary":false,"fairlending":true},"48141010322":{"value":125830,"vacancy":11.3,"owner_occ":76.5,"renter_occ":23.5,"yrbuilt":1997,"neighborhood":"Upper Eastside","rehab":false,"missingmiddle":false,"permitting":false,"inclusionary":false,"fairlending":false},"48141010323":{"value":159185,"vacancy":5.3,"owner_occ":76.3,"renter_occ":23.7,"yrbuilt":1997,"neighborhood":"Upper Eastside","rehab":false,"missingmiddle":false,"permitting":false,"inclusionary":true,"fairlending":false},"48141010324":{"value":126897,"vacancy":3.5,"owner_occ":86.1,"renter_occ":13.9,"yrbuilt":1998,"neighborhood":"Upper Eastside","rehab":false,"missingmiddle":false,"permitting":false,"inclusionary":false,"fairlending":false},"48141010325":{"value":122599,"vacancy":0.0,"owner_occ":72.2,"renter_occ":27.8,"yrbuilt":2001,"neighborhood":"Upper Eastside","rehab":false,"missingmiddle":false,"permitting":false,"inclusionary":false,"fairlending":false},"48141010326":{"value":171228,"vacancy":9.1,"owner_occ":59.9,"renter_occ":40.1,"yrbuilt":1988,"neighborhood":"Upper Eastside","rehab":false,"missingmiddle":false,"permitting":false,"inclusionary":false,"fairlending":false},"48141010327":{"value":129003,"vacancy":4.1,"owner_occ":76.5,"renter_occ":23.5,"yrbuilt":1989,"neighborhood":"Upper Eastside","rehab":false,"missingmiddle":false,"permitting":false,"inclusionary":false,"fairlending":false},"48141010328":{"value":189634,"vacancy":4.8,"owner_occ":57.3,"renter_occ":42.7,"yrbuilt":1996,"neighborhood":"Upper Eastside","rehab":false,"missingmiddle":false,"permitting":false,"inclusionary":true,"fairlending":false},"48141010329":{"value":132529,"vacancy":8.3,"owner_occ":68.8,"renter_occ":31.2,"yrbuilt":2001,"neighborhood":"Upper Eastside","rehab":false,"missingmiddle":false,"permitting":false,"inclusionary":false,"fairlending":false},"48141010330":{"value":172987,"vacancy":9.9,"owner_occ":88.6,"renter_occ":11.4,"yrbuilt":2004,"neighborhood":"Upper Eastside","rehab":false,"missingmiddle":false,"permitting":false,"inclusionary":true,"fairlending":false},"48141010331":{"value":146814,"vacancy":8.9,"owner_occ":63.3,"renter_occ":36.7,"yrbuilt":2005,"neighborhood":"Upper Eastside","rehab":false,"missingmiddle":false,"permitting":false,"inclusionary":true,"fairlending":false},"48141010332":{"value":118224,"vacancy":6.5,"owner_occ":81.2,"renter_occ":18.8,"yrbuilt":2003,"neighborhood":"County","rehab":false,"missingmiddle":false,"permitting":false,"inclusionary":false,"fairlending":false},"48141010333":{"value":107292,"vacancy":1.3,"owner_occ":86.2,"renter_occ":13.8,"yrbuilt":2004,"neighborhood":"County","rehab":false,"missingmiddle":false,"permitting":false,"inclusionary":false,"fairlending":true},"48141010334":{"value":91018,"vacancy":10.3,"owner_occ":87.0,"renter_occ":13.0,"yrbuilt":2001,"neighborhood":"County","rehab":false,"missingmiddle":false,"permitting":false,"inclusionary":false,"fairlending":true},"48141010335":{"value":97108,"vacancy":7.7,"owner_occ":81.3,"renter_occ":18.7,"yrbuilt":2000,"neighborhood":"County","rehab":false,"missingmiddle":false,"permitting":false,"inclusionary":false,"fairlending":true},"48141010336":{"value":126388,"vacancy":4.4,"owner_occ":66.1,"renter_occ":33.9,"yrbuilt":1997,"neighborhood":"Eastside Master Plan","rehab":false,"missingmiddle":false,"permitting":false,"inclusionary":false,"fairlending":false},"48141010337":{"value":140785,"vacancy":6.4,"owner_occ":58.7,"renter_occ":41.3,"yrbuilt":1995,"neighborhood":"Eastside Master Plan","rehab":false,"missingmiddle":false,"permitting":false,"inclusionary":false,"fairlending":false},"48141010338":{"value":219927,"vacancy":9.6,"owner_occ":68.4,"renter_occ":31.6,"yrbuilt":1999,"neighborhood":"Eastside Master Plan","rehab":false,"missingmiddle":false,"permitting":false,"inclusionary":true,"fairlending":false},"48141010339":{"value":157533,"vacancy":4.8,"owner_occ":61.9,"renter_occ":38.1,"yrbuilt":2007,"neighborhood":"Upper Eastside","rehab":false,"missingmiddle":false,"permitting":false,"inclusionary":true,"fairlending":false},"48141010340":{"value":115721,"vacancy":17.2,"owner_occ":83.6,"renter_occ":16.4,"yrbuilt":1996,"neighborhood":"County","rehab":false,"missingmiddle":false,"permitting":false,"inclusionary":false,"fairlending":false},"48141010341":{"value":169418,"vacancy":6.0,"owner_occ":80.7,"renter_occ":19.3,"yrbuilt":2009,"neighborhood":"Upper Eastside","rehab":false,"missingmiddle":false,"permitting":false,"inclusionary":true,"fairlending":false},"48141010342":{"value":179376,"vacancy":12.3,"owner_occ":82.2,"renter_occ":17.8,"yrbuilt":2010,"neighborhood":"Eastside Master Plan","rehab":false,"missingmiddle":false,"permitting":false,"inclusionary":true,"fairlending":false},"48141010343":{"value":174325,"vacancy":3.7,"owner_occ":87.7,"renter_occ":12.3,"yrbuilt":1995,"neighborhood":"County","rehab":false,"missingmiddle":false,"permitting":false,"inclusionary":true,"fairlending":false},"48141010344":{"value":109288,"vacancy":8.6,"owner_occ":79.6,"renter_occ":20.4,"yrbuilt":1996,"neighborhood":"County","rehab":false,"missingmiddle":false,"permitting":false,"inclusionary":false,"fairlending":true},"48141010345":{"value":171563,"vacancy":5.2,"owner_occ":87.8,"renter_occ":12.2,"yrbuilt":2008,"neighborhood":"County","rehab":false,"missingmiddle":false,"permitting":false,"inclusionary":true,"fairlending":false},"48141010346":{"value":106069,"vacancy":6.8,"owner_occ":81.9,"renter_occ":18.1,"yrbuilt":1989,"neighborhood":"County","rehab":false,"missingmiddle":false,"permitting":false,"inclusionary":false,"fairlending":true},"48141010347":{"value":123040,"vacancy":4.6,"owner_occ":71.5,"renter_occ":28.5,"yrbuilt":1994,"neighborhood":"County","rehab":false,"missingmiddle":false,"permitting":false,"inclusionary":false,"fairlending":false},"48141010401":{"value":115144,"vacancy":6.6,"owner_occ":66.1,"renter_occ":33.9,"yrbuilt":1989,"neighborhood":"Rio Bosque","rehab":false,"missingmiddle":false,"permitting":false,"inclusionary":false,"fairlending":false},"48141010404":{"value":122180,"vacancy":8.7,"owner_occ":84.6,"renter_occ":15.4,"yrbuilt":1987,"neighborhood":"County","rehab":false,"missingmiddle":false,"permitting":false,"inclusionary":false,"fairlending":false},"48141010405":{"value":103687,"vacancy":8.9,"owner_occ":82.9,"renter_occ":17.1,"yrbuilt":1994,"neighborhood":"Rio Bosque","rehab":false,"missingmiddle":false,"permitting":false,"inclusionary":false,"fairlending":true},"48141010406":{"value":85778,"vacancy":19.7,"owner_occ":78.1,"renter_occ":21.9,"yrbuilt":1993,"neighborhood":"County","rehab":true,"missingmiddle":false,"permitting":false,"inclusionary":false,"fairlending":true},"48141010407":{"value":87167,"vacancy":10.4,"owner_occ":61.6,"renter_occ":38.4,"yrbuilt":1998,"neighborhood":"County","rehab":false,"missingmiddle":true,"permitting":false,"inclusionary":false,"fairlending":true},"48141010408":{"value":110597,"vacancy":7.8,"owner_occ":70.4,"renter_occ":29.6,"yrbuilt":1989,"neighborhood":"County","rehab":false,"missingmiddle":false,"permitting":false,"inclusionary":false,"fairlending":true},"48141010409":{"value":110655,"vacancy":3.9,"owner_occ":77.6,"renter_occ":22.4,"yrbuilt":1999,"neighborhood":"County","rehab":false,"missingmiddle":false,"permitting":false,"inclusionary":false,"fairlending":true},"48141010501":{"value":110515,"vacancy":10.6,"owner_occ":70.6,"renter_occ":29.4,"yrbuilt":2000,"neighborhood":"County","rehab":false,"missingmiddle":false,"permitting":false,"inclusionary":false,"fairlending":true},"48141010502":{"value":160209,"vacancy":13.1,"owner_occ":77.1,"renter_occ":22.9,"yrbuilt":1988,"neighborhood":"County","rehab":false,"missingmiddle":false,"permitting":false,"inclusionary":false,"fairlending":false},"48141010504":{"value":77668,"vacancy":14.5,"owner_occ":85.0,"renter_occ":15.0,"yrbuilt":1995,"neighborhood":"County","rehab":true,"missingmiddle":false,"permitting":false,"inclusionary":false,"fairlending":true},"48141010506":{"value":85813,"vacancy":8.7,"owner_occ":81.1,"renter_occ":18.9,"yrbuilt":2003,"neighborhood":"County","rehab":false,"missingmiddle":false,"permitting":false,"inclusionary":false,"fairlending":true}};
 const TRACT_GEO = {"type":"FeatureCollection", "features": [
 {"type":"Feature","geometry":{"type":"Polygon","coordinates":[[[-106.4949,31.8689],[-106.4936,31.8615],[-106.4937,31.8507],[-106.4918,31.8486],[-106.4901,31.8441],[-106.4893,31.8426],[-106.4866,31.8422],[-106.4838,31.8401],[-106.4825,31.838],[-106.4806,31.8365],[-106.4787,31.8365],[-106.476,31.8324],[-106.4754,31.8241],[-106.4738,31.8228],[-106.4716,31.8219],[-106.4655,31.8218],[-106.4659,31.8183],[-106.4631,31.8183],[-106.4629,31.8242],[-106.4575,31.825],[-106.4557,31.8257],[-106.4547,31.8267],[-106.4541,31.8285],[-106.4543,31.8321],[-106.4565,31.8353],[-106.4574,31.8379],[-106.4571,31.8401],[-106.454,31.8446],[-106.4534,31.8478],[-106.4527,31.8481],[-106.4528,31.8514],[-106.4498,31.8514],[-106.4502,31.8695],[-106.4761,31.8693],[-106.4906,31.8693],[-106.4949,31.8689]]]},"properties":{"STATEFP":"48","COUNTYFP":"141","TRACTCE":"000401","GEOID":"48141000401","NAME":"4.01","NAMELSAD":"Census Tract 4.01","MTFCC":"G5020","FUNCSTAT":"S","ALAND":16538748,"AWATER":3207,"INTPTLAT":"+31.8419201","INTPTLON":"-106.4740235"}},
@@ -619,7 +831,7 @@ const POLICY_META = {
   },
   fairlending: {
     title: 'Fair lending access &mdash; same core tracts, citywide evidence',
-    footer: 'HMDA 2024 (city-wide, all loan purposes): Hispanic/Latino applicants denied at 29.3% vs. 20.5% for non-Hispanic applicants. This gap is citywide rather than reliably mappable at the tract level here (2020 Census boundary change breaks the join to these tract IDs) &mdash; shown on the same low-value core tracts as rehab/missing-middle, where the affordability + access barrier overlap is sharpest.',
+    footer: 'HMDA 2024 (city-wide, all loan purposes): Hispanic/Latino applicants denied at 29.3% vs. 20.5% for non-Hispanic applicants. This gap is citywide rather than reliably mappable at the tract level here (2020 Census boundary change breaks the join to these tract IDs) &mdash; shown on the same low-value core tracts as rehab/missing-middle.',
     bars: [
       { label:'Denial rate, Hispanic (%)', targetAvg:29.3, cityAvg:20.5 },
     ]
@@ -637,9 +849,7 @@ const POLICY_META = {
 let currentPolicy = 'all';
 let policyChart = null;
 let tractLayer = null;
-
-const TEAL='#2C6072', OCHRE='#B9822E', BRICK='#A34432', DEEPTEAL='#123A47', DEEPOCHRE='#7A5218';
-const POLICY_COLOR = {rehab:BRICK, missingmiddle:OCHRE, permitting:TEAL, fairlending:DEEPOCHRE, inclusionary:DEEPTEAL};
+const POLICY_COLOR = {rehab:CORAL, missingmiddle:GOLD_DEEP, permitting:TEAL, fairlending:VIOLET_DEEP, inclusionary:NAVY};
 
 const tractValues = Object.values(TRACT_DATA).map(d=>d.value).filter(x=>x!=null);
 const V_LO = Math.min(...tractValues), V_HI = Math.max(...tractValues);
@@ -647,7 +857,7 @@ const V_LO = Math.min(...tractValues), V_HI = Math.max(...tractValues);
 function valueColor(v){
   if(v==null) return '#EDEAE0';
   const t = Math.max(0, Math.min(1,(v-V_LO)/(V_HI-V_LO)));
-  const c0=[230,241,251], c1=[18,58,71];
+  const c0=[255,243,214], c1=[138,90,0];
   return 'rgb('+Math.round(c0[0]+(c1[0]-c0[0])*t)+','+Math.round(c0[1]+(c1[1]-c0[1])*t)+','+Math.round(c0[2]+(c1[2]-c0[2])*t)+')';
 }
 
@@ -660,7 +870,7 @@ function styleForTract(feature){
   const on = info[currentPolicy];
   return {
     fillColor: on ? POLICY_COLOR[currentPolicy] : '#EEEBE0',
-    fillOpacity: on ? 0.85 : 0.35,
+    fillOpacity: on ? 0.9 : 0.35,
     color:'#fff', weight:0.8
   };
 }
@@ -700,16 +910,15 @@ function renderMap(){
         ? 'Tract '+feature.properties.NAME+'<br>Median AVM: $'+(info.value?info.value.toLocaleString():'n/a')+'<br>Vacancy: '+info.vacancy+'% &middot; Owner-occ: '+info.owner_occ+'%<br>Avg year built: '+(info.yrbuilt||'n/a')
         : 'Tract '+feature.properties.NAME+'<br>No data available';
       layer.bindTooltip(html, { sticky:true, className:'tract-tip' });
-      layer.on('mouseover', function(){ this.setStyle({ weight:2, color:'#20282B' }); });
+      layer.on('mouseover', function(){ this.setStyle({ weight:2, color:'#14151A' }); });
       layer.on('mouseout', function(){ tractLayer.resetStyle(this); });
     }
   }).addTo(map);
 
   const zipLayer = L.geoJSON(ZIP_GEO, {
-    style: { color: BRICK, weight:1.6, dashArray:'6,4', fillOpacity:0 },
+    style: { color: CORAL_DEEP, weight:1.6, dashArray:'6,4', fillOpacity:0 },
     interactive: false
   }).addTo(map);
-  window._zipLayer = zipLayer;
 
   map.fitBounds(tractLayer.getBounds(), { padding:[10,10] });
 
@@ -747,12 +956,12 @@ function updateChart(policy){
   policyChart = new Chart(canvas, {
     type:'bar',
     data:{ labels, datasets:[
-      {label:'Targeted tracts', data:targetData, backgroundColor: POLICY_COLOR[policy] || '#A34432', borderRadius:3},
-      {label:'City average', data:cityData, backgroundColor:'#B9B6A6', borderRadius:3}
+      {label:'Targeted tracts', data:targetData, backgroundColor: POLICY_COLOR[policy] || CORAL, borderRadius:3},
+      {label:'City average', data:cityData, backgroundColor:'#D8D5C4', borderRadius:3}
     ]},
     options:{ responsive:true, maintainAspectRatio:false, indexAxis:'y',
       plugins:{ legend:{ position:'top', labels:{ boxWidth:10, font:{size:10.5} } } },
-      scales:{ x:{ grid:{color:'#e1e0d9'} }, y:{ grid:{display:false}, ticks:{font:{size:10.5}} } }
+      scales:{ x:{ grid:{color:'#E4E1D6'} }, y:{ grid:{display:false}, ticks:{font:{size:10.5}} } }
     }
   });
 }
@@ -764,15 +973,6 @@ document.getElementById('policyButtons').addEventListener('click', (e)=>{
 });
 
 renderMap();
-
-const links = document.querySelectorAll('nav.toc a');
-const secs = [...links].map(l=>document.querySelector(l.getAttribute('href')));
-window.addEventListener('scroll', ()=>{
-  let idx=0;
-  secs.forEach((s,i)=>{ if(s.getBoundingClientRect().top < 140) idx=i; });
-  links.forEach(l=>l.classList.remove('active'));
-  links[idx].classList.add('active');
-});
 </script>
 </body>
 </html>
