@@ -239,6 +239,23 @@ footer a{color:#F4F2E9;}
 
     <p style="color:#eafffb;">On a <b>percentage</b> basis, homes in El Paso's cheapest neighborhoods actually gained value a little faster than homes in the priciest ones &mdash; 7.2% a year versus 6.6%. That's a real, measurable sign that the affordability gap isn't accelerating in the wrong direction. If this were the whole story, we'd call it a point in filtering's favor.</p>
     <p style="color:#eafffb;">But percentages can be misleading when the starting prices are so different. Keep scrolling.</p>
+
+    <p class="lede" style="margin-top:34px;">There's a second piece of good news, and it's a bigger one: what happens when a renter becomes a buyer.</p>
+
+    <div class="chart-card">
+      <div class="legend-row">
+        <span><span class="dot" style="background:var(--ink-soft);"></span>Typical home sale, citywide</span>
+        <span><span class="dot" style="background:var(--violet);"></span>What renters-turned-buyers actually paid</span>
+      </div>
+      <div style="position:relative; height:220px;"><canvas id="chartRenterBuyer"></canvas></div>
+      <div class="chart-cap">Median sale price, all recent El Paso home sales, vs. the median price paid by renters we could trace into a home purchase (48 traceable cases).</div>
+    </div>
+
+    <div class="pull-number">
+      <div class="num" style="color:var(--teal-deep);">65%</div>
+      <div class="cap">Renters who bought a home paid a median of $168,750 &mdash; only 65% of the citywide median sale price. That's exactly what filtering is supposed to look like: the entry point into ownership sits well below the typical home price, and it's renters making that jump who are finding it.</div>
+    </div>
+    <p style="color:#eafffb;">The rental market itself is more of a mixed bag. Among renters we could trace from one rental into another, the typical move was actually to a slightly <em>cheaper</em> unit (a median 11% less) &mdash; not the rent hikes you might expect. That sample is small (36 traceable moves) so we wouldn't lean on it hard, but it's not a red flag either.</p>
   </div>
 </section>
 <section class="band white" id="against">
@@ -279,6 +296,17 @@ footer a{color:#F4F2E9;}
       <div class="chart-cap">Census vacancy rate estimates by neighborhood value tier, 2010&ndash;2024. The priciest and middle tiers are back near their 2010 levels. The cheapest tier never fully recovered from its 2019 peak.</div>
     </div>
     <p style="color:#C9C7D9;">This is the opposite of what a healthy filtering market looks like. Empty homes sitting in the cheapest neighborhoods for years at a time is a sign of neighborhoods being avoided, not neighborhoods absorbing move-down demand.</p>
+
+    <div class="chart-card">
+      <div class="legend-row">
+        <span><span class="dot" style="background:var(--coral);"></span>Cheapest third of tracts</span>
+        <span><span class="dot" style="background:var(--gold);"></span>Middle third</span>
+        <span><span class="dot" style="background:var(--violet);"></span>Priciest third</span>
+      </div>
+      <div style="position:relative; height:280px;"><canvas id="chartUspsVacancy"></canvas></div>
+      <div class="chart-cap">Share of residential addresses flagged vacant, USPS quarterly data, Dec 2024&ndash;Mar 2026 &mdash; a completely different data source than the chart above, current through this year. Same gap: the cheapest third of tracts runs about 3&times; the vacancy rate of the priciest third, all the way through early 2026.</div>
+    </div>
+    <p style="color:#C9C7D9;">There's a twist worth naming: these same cheap tracts don't just have more empty homes, they also have more than double the rate of <b>overcrowding</b> found in the priciest tracts. Empty units and packed-in households at the same time isn't "no demand." It's a mismatch &mdash; the housing that's sitting vacant often isn't the housing that would actually fit the households who need it.</p>
   </div>
 </section>
 
@@ -324,23 +352,31 @@ footer a{color:#F4F2E9;}
 <section class="band coral" id="chains">
   <div class="wrap">
     <div class="kicker">The case AGAINST filtering, one more piece</div>
-    <h2 class="section-title">We traced actual moves &mdash; using real sale prices this time</h2>
-    <p class="lede">Filtering theory makes a specific prediction: when someone moves out of a home, whoever moves in next should be paying less. We tested this using mover records that show exactly where 9,463 households moved from and to, matched against real MLS sold prices instead of modeled estimates &mdash; a meaningfully stronger version of this test than our first pass.</p>
+    <h2 class="section-title">We followed real people's actual moves</h2>
+    <p class="lede">Filtering makes a specific prediction: when someone moves out of a home, whoever moves in next should be paying less for it. Using records of thousands of real moves in and around El Paso &mdash; where people came from, where they went &mdash; matched against actual sale prices for those homes, here's what we found.</p>
 
     <div class="chart-card">
       <div class="legend-row">
-        <span><span class="dot" style="background:var(--ink-soft);"></span>Home they left (real MLS sold price)</span>
-        <span><span class="dot" style="background:var(--violet);"></span>Home they moved into (real MLS sold price)</span>
+        <span><span class="dot" style="background:var(--ink-soft);"></span>Home they left</span>
+        <span><span class="dot" style="background:var(--violet);"></span>Home they moved into</span>
       </div>
       <div style="position:relative; height:260px;"><canvas id="chartChain"></canvas></div>
-      <div class="chart-cap">Median real MLS sold price tied to each household's former and current address, for 137 movers where both addresses matched an actual MLS sale on the exact house number and a fuzzy-matched street name (score &ge;85).</div>
+      <div class="chart-cap">Median sale price tied to each household's old and new address, based on 495 traceable local moves.</div>
     </div>
 
     <div class="pull-number">
-      <div class="num" style="color:#2A0507;">71%</div>
-      <div class="cap" style="color:#3A0A0C;">of these movers traded up to a more expensive home &mdash; a median jump from $250,000 to $310,000, about 34% more. That's a healthy, normal picture of households moving up. What it doesn't show is what happens next: whether someone else then moves into the cheaper home they left at a real discount.</div>
+      <div class="num" style="color:#2A0507;">64%</div>
+      <div class="cap" style="color:#3A0A0C;">of these movers traded up to a more expensive home &mdash; a median jump from $245,000 to $285,000, about 16% more. That's a healthy, normal picture of households moving up. What it doesn't show is what happens next: whether someone else then moves into the cheaper home they left at a real discount.</div>
     </div>
-    <p style="color:#3A0A0C;">This version matches each mover's own former and current address directly against real MLS sales &mdash; blocked on an exact house number match, then fuzzy-matched on street name to allow for typos and abbreviations (e.g. "DR" vs. "Drive"). It's a stricter, more precise method than our first pass, and it lands on essentially the same conclusion with more data behind it: people are moving up in El Paso &mdash; just not obviously by freeing up a bargain for whoever comes next.</p>
+    <p style="color:#3A0A0C;">We could only verify prices for moves where both the old and new home happened to show up in real sales records &mdash; mostly local moves within El Paso. It's a partial picture, not every move in the city, but a telling one: people are moving up in El Paso &mdash; just not obviously by freeing up a bargain for whoever comes next.</p>
+
+    <p class="lede" style="margin-top:30px;">Price is one way to check this. A more direct one: for homes that sold twice &mdash; once earlier, once again a few years later &mdash; did the second buyer actually earn less than the first? Using real reported income from home loan records, here's what happened at 239 individual houses that changed hands twice.</p>
+
+    <div class="pull-number">
+      <div class="num" style="color:#2A0507;">53%</div>
+      <div class="cap" style="color:#3A0A0C;">of the time, the second buyer earned less than the first buyer &mdash; relative to typical incomes in that year, since incomes rose citywide over this period and we adjusted for that. That's barely above a coin flip. If filtering were working, this number should be well above 50%: it should be reliably true that the next buyer of an older, aging home earns less than the one before. It isn't reliably true &mdash; it's close to random.</div>
+    </div>
+    <p style="color:#3A0A0C;">This is the most direct test in the whole analysis, because it's the same house both times, and it's actual income instead of a price stand-in for income. The result lines up with everything else: not "filtering has completely failed," but "filtering isn't doing the one job it's supposed to do in any reliable way."</p>
   </div>
 </section>
 
@@ -368,33 +404,47 @@ footer a{color:#F4F2E9;}
       <div class="chart-cap">For a typical 1,360 sqft historic-core home. Renovation cost ranges are general national benchmarks (HomeAdvisor/Angi, 2025) &mdash; not El Paso-specific figures, since we don't have local contractor cost data.</div>
     </div>
 
-    <p>The math: a typical old-core home sells for about $33/sqft less than a comparable new-construction home &mdash; roughly a <b>$45,000 discount</b> on a typical 1,360 sqft house. Even a light cosmetic refresh runs $20,000&ndash;$82,000 nationally, and a genuine mid-range remodel runs $54,000&ndash;$204,000. So the entire savings from buying old barely covers the lightest possible touch-up, and doesn't come close to funding a renovation that would make the home comparable to new construction. If the gap were wider &mdash; say, if new construction commanded a much bigger premium &mdash; buying and fixing up an old home would make a lot more financial sense, and we'd expect to see more of it happening. That's a plausible, if indirect, explanation for the persistent vacancy and disinvestment in El Paso's oldest neighborhoods: not that no one wants to live there, but that the numbers don't clearly reward fixing up what's already there.</p>
+    <p>The math: a typical old-core home sells for about $33/sqft less than a comparable new-construction home &mdash; roughly a <b>$45,000 discount</b> on a typical 1,360 sqft house. Even a light cosmetic refresh runs $20,000&ndash;$82,000 nationally, and a genuine mid-range remodel runs $54,000&ndash;$204,000. So the entire savings from buying old barely covers the lightest possible touch-up, and doesn't come close to funding a renovation that would make the home comparable to new construction.</p>
+
+    <p>There's a deeper reason this math is so unforgiving, and it comes down to zoning specifics. Most residential land in the core is zoned exclusively for single-family homes. ADUs (a small second unit behind a house) are allowed citywide, but only attached to a single-family detached home. Duplexes are allowed in some districts (R-4 and R-5). But no residential zoning district in El Paso &mdash; and residential districts cover most of the city's land &mdash; allows more than two units on a lot. Plenty of old core houses and lots are physically suited to become three, four, or more small units. Legally, almost none of them can.</p>
+
+    <div class="chart-card">
+      <div class="legend-row">
+        <span><span class="dot" style="background:var(--coral);"></span>Historic core</span>
+        <span><span class="dot" style="background:var(--teal);"></span>Fast-growing new suburbs</span>
+      </div>
+      <div style="position:relative; height:260px;"><canvas id="chartZoning"></canvas></div>
+      <div class="chart-cap">Zoning district at each home sale's actual location, matched against the city's official zoning map. Nearly 9 in 10 core homes sit on land that legally tops out at a duplex.</div>
+    </div>
+    <p>Checking that against the city's actual zoning map confirms it: <b>89% of core home sales sit on land zoned for single-family or duplex use at most</b>, versus 71% in the fast-growing suburbs. Land zoned to allow a triplex or more is rare everywhere in El Paso &mdash; about 7.5% of the core, barely 2.5% of the new suburbs &mdash; but the core at least has slightly more of it already on the books. The bigger problem is what's happening (or not) on that small share of already-eligible land: even there, the same weak economics apply, so legal permission alone isn't enough without the numbers also working out.</p>
+    <p>That gap matters because of what El Paso's own rent data shows. A separate look at current asking rents against area median income found that El Paso rents are already low relative to what it costs to build new &mdash; not because of low demand, but because incomes here are modest relative to national construction costs. That makes new-build small apartments hard to finance almost anywhere in the city. Converting an existing old house, though, skips the biggest cost of new construction: buying land and building a shell from scratch. That same research estimated conversions could pencil out with as many as 6&ndash;8 units in the highest-vacancy tracts &mdash; well above the 2-unit cap current zoning allows. In other words, the economics of fixing up an old core house work best exactly where the law currently won't let them.</p>
   </div>
 </section>
-
 
 <section class="band violet" id="recap">
   <div class="wrap">
     <div class="kicker">Adding it up</div>
     <h2 class="section-title">The evidence, side by side</h2>
-    <p class="lede">One real signal points toward filtering working. Five separate, independent signals point toward it stalling. That's why the honest answer is "barely" rather than a clean yes or no.</p>
+    <p class="lede">Two real signals point toward filtering working. Six separate, independent signals point toward it stalling. That's why the honest answer is "barely" rather than a clean yes or no.</p>
 
     <div class="evidence-grid">
       <div class="evidence-card for">
         <h4>&#10003; Points toward filtering</h4>
         <ul>
           <li><b>Percentage price growth</b> in the cheapest neighborhoods (7.2%/year) has kept pace with &mdash; and even slightly beaten &mdash; the priciest ones (6.6%/year) over the long run.</li>
-          <li>Movers overall are <b>trading up</b>: 71% moved to a more expensive home ($250k &rarr; $310k median, real MLS prices), confirmed on a house-number-verified match. Mobility itself isn't broken.</li>
+          <li>Movers overall are <b>trading up</b>: 64% moved to a more expensive home ($245k &rarr; $285k median, based on real sale prices). Mobility itself isn't broken.</li>
+          <li>Renters who bought a home paid a <b>median of just 65% of the citywide median sale price</b> &mdash; the affordable end of the stock genuinely is where new buyers enter.</li>
         </ul>
       </div>
       <div class="evidence-card against">
         <h4>&#10007; Points against filtering</h4>
         <ul>
           <li><b>Dollar-value growth</b> in the priciest neighborhoods is roughly 3&times; faster than in the cheapest ones &mdash; the real wealth gap is widening even as percentages look similar.</li>
-          <li><b>Vacancy</b> in the cheapest third of tracts is still above its 2010 level, while other tiers have recovered.</li>
+          <li><b>Vacancy</b> in the cheapest third of tracts is still above its 2010 level, while other tiers have recovered &mdash; and current USPS data confirms the same ~3&times; gap persists through early 2026.</li>
           <li>The <b>new-vs-resale price gap</b> grew from 11% to 17% in three years &mdash; new construction is a separate, faster-moving market, not feeding the chain below it.</li>
           <li><b>New housing permits</b> have fallen roughly 45% since the 2010s, cutting off the supply that filtering depends on.</li>
           <li>The handful of traceable moves where the same home changes hands twice show <b>no clear discount</b> passed to the next occupant.</li>
+          <li>The sharpest test: at homes that sold twice, the second buyer's <b>actual income</b> was lower than the first buyer's only 53% of the time &mdash; barely better than a coin flip.</li>
         </ul>
       </div>
     </div>
@@ -447,7 +497,7 @@ footer a{color:#F4F2E9;}
       <h3 style="font-family:'Space Grotesk'; font-weight:700; font-size:22px;">Where each policy is aimed, in plain terms</h3>
       <ul style="font-size:16px; line-height:1.8;">
         <li><b style="color:var(--coral-deep);">Vacant property &amp; rehab</b> &mdash; the historic core, where vacancy is highest and values lowest. Registration fees on empty homes plus rehab loans to get them occupied again.</li>
-        <li><b style="color:#8A5A00;">Missing-middle zoning</b> &mdash; similar core tracts, already more renter-occupied than average. Legalize duplexes/triplexes/ADUs so aging homes can add units instead of sitting still.</li>
+        <li><b style="color:#8A5A00;">Missing-middle zoning</b> &mdash; similar core tracts, already more renter-occupied than average. Duplexes and ADUs are already legal in parts of the city, but nowhere is 3&ndash;8 unit conversion of an existing house allowed &mdash; exactly the range that could make fixing up old homes here pencil out financially.</li>
         <li><b style="color:var(--teal-deep);">Multifamily infill permitting</b> &mdash; the oldest-vintage third of tracts citywide. Streamline approvals for small multifamily buildings on already-serviced land.</li>
         <li><b style="color:var(--violet-deep);">Fair lending access</b> &mdash; same core tracts. Hispanic/Latino applicants were denied credit at nearly 1.5&times; the rate of non-Hispanic applicants citywide in 2024; down-payment assistance targets that gap directly.</li>
         <li><b style="color:var(--navy);">Inclusionary mix</b> &mdash; the fast-growing eastern and western suburbs, where nearly all new supply already lands. A modest share of smaller/attached units there slows the growing new-vs-resale price gap.</li>
@@ -457,7 +507,7 @@ footer a{color:#F4F2E9;}
 </section>
 
 <footer>
-  <div class="wrap">Sources: MLS closed sales (Apr 2024&ndash;Aug 2025 and 2021&ndash;2024 extended file), HMDA LAR 2024 (El Paso County, full universe), Repeat Sales (single-family, sale pairs 1996&ndash;2022), Housing Characteristics by Tract (First American AVM), ACS DP04 5-year estimates 2010&ndash;2024, City of El Paso annual building permits 1988&ndash;2025. Tract boundaries pre-2020 vintage.</div>
+  <div class="wrap">Sources: MLS home sales (2019&ndash;2026), HMDA mortgage records (El Paso County, 2024), historical mover records, Census/ACS housing surveys (2010&ndash;2024), First American home value estimates, and City of El Paso building permits (1988&ndash;2025).</div>
 </footer>
 <script>
 /* ============ palette ============ */
@@ -500,6 +550,17 @@ new Chart(document.getElementById('chartCagr'), {
   }
 });
 
+/* ============ 2b. Renter-to-buyer purchase price vs citywide median ============ */
+new Chart(document.getElementById('chartRenterBuyer'), {
+  type:'bar',
+  data:{ labels:['Citywide median sale','Renters-turned-buyers, median'],
+    datasets:[{ data:[259950,168750], backgroundColor:[INKSOFT,VIOLET], borderRadius:4, borderWidth:2, borderColor:'#14151A' }] },
+  options:{ indexAxis:'y', responsive:true, maintainAspectRatio:false,
+    plugins:{ legend:{display:false}, tooltip:{callbacks:{label:(c)=>'$'+c.parsed.x.toLocaleString()}} },
+    scales:{ x:{ title:{display:true,text:'Median sale price ($)'}, grid:{color:'#E4E1D6'}, ticks:{callback:(v)=>'$'+(v/1000)+'k'} }, y:{ grid:{display:false} } }
+  }
+});
+
 /* ============ 3. Repeat-sales $ per year by quintile ============ */
 new Chart(document.getElementById('chartDollar'), {
   type:'bar',
@@ -526,7 +587,39 @@ new Chart(document.getElementById('chartVacancy'), {
   ]},
   options:{ responsive:true, maintainAspectRatio:false,
     plugins:{ legend:{display:false}, tooltip:{callbacks:{label:(c)=>c.dataset.label+': '+c.parsed.y.toFixed(1)+'%'}} },
-    scales:{ y:{ title:{display:true,text:'Vacancy rate (%)'}, grid:{color:'rgba(255,255,255,0.15)'}, ticks:{color:'#C9C7D9'} }, x:{ grid:{display:false}, ticks:{color:'#C9C7D9'} } }
+    scales:{ y:{ title:{display:true,text:'Vacancy rate (%)'}, grid:{color:'#E4E1D6'} }, x:{ grid:{display:false} } }
+  }
+});
+
+/* ============ 4b. USPS quarterly vacancy by tier (current, Dec 2024-Mar 2026) ============ */
+const uYrs=['Dec 2024','Mar 2025','Jun 2025','Sep 2025','Dec 2025','Mar 2026'];
+const uLow=[2.619,2.565,2.555,2.455,2.307,2.341];
+const uMid=[1.313,1.305,1.279,1.261,1.145,1.074];
+const uHi=[0.944,0.961,0.915,0.922,0.781,0.722];
+new Chart(document.getElementById('chartUspsVacancy'), {
+  type:'line',
+  data:{ labels:uYrs, datasets:[
+    {label:'Cheapest third', data:uLow, borderColor:CORAL, backgroundColor:CORAL, borderWidth:3, pointRadius:3, tension:.2},
+    {label:'Middle third', data:uMid, borderColor:GOLD_DEEP, backgroundColor:GOLD_DEEP, borderWidth:2, pointRadius:3, tension:.2, borderDash:[6,3]},
+    {label:'Priciest third', data:uHi, borderColor:VIOLET, backgroundColor:VIOLET, borderWidth:2, pointRadius:3, tension:.2, borderDash:[2,2]}
+  ]},
+  options:{ responsive:true, maintainAspectRatio:false,
+    plugins:{ legend:{display:false}, tooltip:{callbacks:{label:(c)=>c.dataset.label+': '+c.parsed.y.toFixed(1)+'%'}} },
+    scales:{ y:{ title:{display:true,text:'Vacant addresses (%)'}, grid:{color:'#E4E1D6'} }, x:{ grid:{display:false} } }
+  }
+});
+
+/* ============ 5b. Zoning composition, core vs suburbs ============ */
+new Chart(document.getElementById('chartZoning'), {
+  type:'bar',
+  data:{ labels:['Single-family/duplex max (R)','Triplex+ allowed (A/C)','Other (planned, mixed-use, special)'],
+    datasets:[
+      {label:'Historic core', data:[89.2,7.5,3.2], backgroundColor:CORAL, borderRadius:4, borderWidth:2, borderColor:'#14151A'},
+      {label:'New suburbs', data:[70.8,2.6,26.6], backgroundColor:TEAL, borderRadius:4, borderWidth:2, borderColor:'#14151A'}
+    ] },
+  options:{ responsive:true, maintainAspectRatio:false,
+    plugins:{ legend:{display:false}, tooltip:{callbacks:{label:(c)=>c.dataset.label+': '+c.parsed.y.toFixed(1)+'%'}} },
+    scales:{ y:{ title:{display:true,text:'Share of home sales (%)'}, grid:{color:'#E4E1D6'} }, x:{ grid:{display:false}, ticks:{font:{size:10.5}} } }
   }
 });
 
@@ -547,7 +640,7 @@ new Chart(document.getElementById('chartGap'), {
 new Chart(document.getElementById('chartChain'), {
   type:'bar',
   data:{ labels:['Home they left','Home they moved into'],
-    datasets:[{ data:[250000,310000], backgroundColor:[INKSOFT,VIOLET], borderRadius:4, borderWidth:2, borderColor:'#14151A' }] },
+    datasets:[{ data:[245000,285000], backgroundColor:[INKSOFT,VIOLET], borderRadius:4, borderWidth:2, borderColor:'#14151A' }] },
   options:{ indexAxis:'y', responsive:true, maintainAspectRatio:false,
     plugins:{ legend:{display:false}, tooltip:{callbacks:{label:(c)=>'$'+c.parsed.x.toLocaleString()+' (median)'}} },
     scales:{ x:{ title:{display:true,text:'Median real MLS sold price ($)'}, grid:{color:'#E4E1D6'}, ticks:{callback:(v)=>'$'+(v/1000)+'k'} }, y:{ grid:{display:false} } }
