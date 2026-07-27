@@ -240,7 +240,7 @@ footer a{color:#F4F2E9;}
     <p style="color:#eafffb;">On a <b>percentage</b> basis, homes in El Paso's cheapest neighborhoods actually gained value a little faster than homes in the priciest ones &mdash; 7.2% a year versus 6.6%. That's a real, measurable sign that the affordability gap isn't accelerating in the wrong direction. If this were the whole story, we'd call it a point in filtering's favor.</p>
     <p style="color:#eafffb;">But percentages can be misleading when the starting prices are so different. Keep scrolling.</p>
 
-    <p class="lede" style="margin-top:34px;">There's a second piece of good news, and it's a bigger one: what happens when a renter becomes a buyer.</p>
+    <p class="lede" style="margin-top:34px;">We also checked what happens when a renter becomes a buyer &mdash; and the picture turns out to be more mixed than the simple version of the theory would predict.</p>
 
     <div class="chart-card">
       <div class="legend-row">
@@ -248,14 +248,15 @@ footer a{color:#F4F2E9;}
         <span><span class="dot" style="background:var(--violet);"></span>What renters-turned-buyers actually paid</span>
       </div>
       <div style="position:relative; height:220px;"><canvas id="chartRenterBuyer"></canvas></div>
-      <div class="chart-cap">Median sale price, all recent El Paso home sales, vs. the median price paid by renters we could trace into a home purchase (48 traceable cases).</div>
+      <div class="chart-cap">Median sale price, all recent El Paso home sales, vs. the median price paid by renters we could trace into a home purchase (344 traceable cases).</div>
     </div>
 
     <div class="pull-number">
-      <div class="num" style="color:var(--teal-deep);">65%</div>
-      <div class="cap">Renters who bought a home paid a median of $168,750 &mdash; only 65% of the citywide median sale price. That's exactly what filtering is supposed to look like: the entry point into ownership sits well below the typical home price, and it's renters making that jump who are finding it.</div>
+      <div class="num" style="color:var(--teal-deep);">92%</div>
+      <div class="cap">With a much larger traceable sample, renters who bought a home paid a median of $239,975 &mdash; 92% of the citywide median. Not the steep discount a smaller sample first suggested. Renters becoming owners aren't finding a bargain; they're paying close to the going rate.</div>
     </div>
-    <p style="color:#eafffb;">The rental market itself is more of a mixed bag. Among renters we could trace from one rental into another, the typical move was actually to a slightly <em>cheaper</em> unit (a median 11% less) &mdash; not the rent hikes you might expect. That sample is small (36 traceable moves) so we wouldn't lean on it hard, but it's not a red flag either.</p>
+    <p style="color:#eafffb;">Here's why: 62% of those purchases landed in the fast-growing suburbs, versus only 10% in the historic core. Renters aren't stepping into the cheap core stock when they buy &mdash; they're buying wherever the market actually is, which in El Paso means the newer, pricier subdivisions. The "affordable entry point" isn't where the theory says it should be.</p>
+    <p style="color:#eafffb;">The rental market tells a similar story. Among renters we could trace from one rental into another (317 traceable moves), 57% paid <em>more</em> at their next place, not less &mdash; a median 9% increase. Renters are facing the same upward drift as buyers, not a break in that direction.</p>
   </div>
 </section>
 <section class="band white" id="against">
@@ -361,12 +362,12 @@ footer a{color:#F4F2E9;}
         <span><span class="dot" style="background:var(--violet);"></span>Home they moved into</span>
       </div>
       <div style="position:relative; height:260px;"><canvas id="chartChain"></canvas></div>
-      <div class="chart-cap">Median sale price tied to each household's old and new address, based on 495 traceable local moves.</div>
+      <div class="chart-cap">Median sale price tied to each household's old and new address, based on 503 traceable local moves.</div>
     </div>
 
     <div class="pull-number">
-      <div class="num" style="color:#2A0507;">64%</div>
-      <div class="cap" style="color:#3A0A0C;">of these movers traded up to a more expensive home &mdash; a median jump from $245,000 to $285,000, about 16% more. That's a healthy, normal picture of households moving up. What it doesn't show is what happens next: whether someone else then moves into the cheaper home they left at a real discount.</div>
+      <div class="num" style="color:#2A0507;">60%</div>
+      <div class="cap" style="color:#3A0A0C;">of these movers traded up to a more expensive home &mdash; a median jump from $244,050 to $275,000, about 13% more. That's a healthy, normal picture of households moving up. What it doesn't show is what happens next: whether someone else then moves into the cheaper home they left at a real discount.</div>
     </div>
     <p style="color:#3A0A0C;">We could only verify prices for moves where both the old and new home happened to show up in real sales records &mdash; mostly local moves within El Paso. It's a partial picture, not every move in the city, but a telling one: people are moving up in El Paso &mdash; just not obviously by freeing up a bargain for whoever comes next.</p>
 
@@ -377,6 +378,19 @@ footer a{color:#F4F2E9;}
       <div class="cap" style="color:#3A0A0C;">of the time, the second buyer earned less than the first buyer &mdash; relative to typical incomes in that year, since incomes rose citywide over this period and we adjusted for that. That's barely above a coin flip. If filtering were working, this number should be well above 50%: it should be reliably true that the next buyer of an older, aging home earns less than the one before. It isn't reliably true &mdash; it's close to random.</div>
     </div>
     <p style="color:#3A0A0C;">This is the most direct test in the whole analysis, because it's the same house both times, and it's actual income instead of a price stand-in for income. The result lines up with everything else: not "filtering has completely failed," but "filtering isn't doing the one job it's supposed to do in any reliable way."</p>
+
+    <p class="lede" style="margin-top:30px;">One more thing worth checking: not just what people paid, but where each type of move actually happens.</p>
+
+    <div class="chart-card">
+      <div class="legend-row">
+        <span><span class="dot" style="background:var(--coral);"></span>Historic core</span>
+        <span><span class="dot" style="background:var(--gold);"></span>Everywhere else</span>
+        <span><span class="dot" style="background:var(--teal);"></span>Fast-growing suburbs</span>
+      </div>
+      <div style="position:relative; height:280px;"><canvas id="chartMoveTypeGeo"></canvas></div>
+      <div class="chart-cap">Where each type of traced move actually lands, by destination zip code.</div>
+    </div>
+    <p style="color:#3A0A0C;">Renter-to-owner moves land in the suburbs 62% of the time and in the core only 10% of the time &mdash; almost the same split as owner-to-owner moves (66% suburb, 8% core). Renters becoming buyers aren't taking a different path into the core's cheaper stock than anyone else; they're funneling into the same new-construction suburbs as everyone else, just like we'd expect given that's where almost all the recent selling activity actually is. The core shows up more in rental-to-rental moves (15%, still the lowest of any move type, but relatively its strongest showing) &mdash; consistent with the core functioning more as rental stock than a path to ownership.</p>
   </div>
 </section>
 
@@ -425,15 +439,13 @@ footer a{color:#F4F2E9;}
   <div class="wrap">
     <div class="kicker">Adding it up</div>
     <h2 class="section-title">The evidence, side by side</h2>
-    <p class="lede">Two real signals point toward filtering working. Six separate, independent signals point toward it stalling. That's why the honest answer is "barely" rather than a clean yes or no.</p>
+    <p class="lede">One real signal points toward filtering working. Eight separate, independent signals point toward it stalling. That's why the honest answer is "barely" rather than a clean yes or no.</p>
 
     <div class="evidence-grid">
       <div class="evidence-card for">
         <h4>&#10003; Points toward filtering</h4>
         <ul>
           <li><b>Percentage price growth</b> in the cheapest neighborhoods (7.2%/year) has kept pace with &mdash; and even slightly beaten &mdash; the priciest ones (6.6%/year) over the long run.</li>
-          <li>Movers overall are <b>trading up</b>: 64% moved to a more expensive home ($245k &rarr; $285k median, based on real sale prices). Mobility itself isn't broken.</li>
-          <li>Renters who bought a home paid a <b>median of just 65% of the citywide median sale price</b> &mdash; the affordable end of the stock genuinely is where new buyers enter.</li>
         </ul>
       </div>
       <div class="evidence-card against">
@@ -443,8 +455,10 @@ footer a{color:#F4F2E9;}
           <li><b>Vacancy</b> in the cheapest third of tracts is still above its 2010 level, while other tiers have recovered &mdash; and current USPS data confirms the same ~3&times; gap persists through early 2026.</li>
           <li>The <b>new-vs-resale price gap</b> grew from 11% to 17% in three years &mdash; new construction is a separate, faster-moving market, not feeding the chain below it.</li>
           <li><b>New housing permits</b> have fallen roughly 45% since the 2010s, cutting off the supply that filtering depends on.</li>
-          <li>The handful of traceable moves where the same home changes hands twice show <b>no clear discount</b> passed to the next occupant.</li>
+          <li>Movers overall are <b>trading up</b>, not down: 60% moved to a more expensive home ($244k &rarr; $275k median), and 57% of renters moving between rentals paid <b>more</b>, not less, at their next place.</li>
+          <li>Renters who bought a home paid a median of <b>92% of the citywide median sale price</b> &mdash; barely a discount, because those purchases land in the same fast-growing suburbs as everyone else, not the affordable core.</li>
           <li>The sharpest test: at homes that sold twice, the second buyer's <b>actual income</b> was lower than the first buyer's only 53% of the time &mdash; barely better than a coin flip.</li>
+          <li><b>Every move type</b> &mdash; renter-to-renter, renter-to-owner, owner-to-owner &mdash; funnels disproportionately into the suburbs (49-66%) and away from the core (8-15%), showing the core functions more as a rental holding pattern than a path to ownership.</li>
         </ul>
       </div>
     </div>
@@ -554,10 +568,25 @@ new Chart(document.getElementById('chartCagr'), {
 new Chart(document.getElementById('chartRenterBuyer'), {
   type:'bar',
   data:{ labels:['Citywide median sale','Renters-turned-buyers, median'],
-    datasets:[{ data:[259950,168750], backgroundColor:[INKSOFT,VIOLET], borderRadius:4, borderWidth:2, borderColor:'#14151A' }] },
+    datasets:[{ data:[259950,239975], backgroundColor:[INKSOFT,VIOLET], borderRadius:4, borderWidth:2, borderColor:'#14151A' }] },
   options:{ indexAxis:'y', responsive:true, maintainAspectRatio:false,
     plugins:{ legend:{display:false}, tooltip:{callbacks:{label:(c)=>'$'+c.parsed.x.toLocaleString()}} },
     scales:{ x:{ title:{display:true,text:'Median sale price ($)'}, grid:{color:'#E4E1D6'}, ticks:{callback:(v)=>'$'+(v/1000)+'k'} }, y:{ grid:{display:false} } }
+  }
+});
+
+/* ============ 4c. Where each move type lands, geographically ============ */
+new Chart(document.getElementById('chartMoveTypeGeo'), {
+  type:'bar',
+  data:{ labels:['Rental \\u2192 Rental','Owner \\u2192 Owner','Renter \\u2192 Owner','Owner \\u2192 Renter'],
+    datasets:[
+      { label:'Historic core', data:[15.1,8.3,9.9,14.2], backgroundColor:CORAL, borderRadius:3, borderWidth:2, borderColor:'#14151A' },
+      { label:'Everywhere else', data:[42.6,26.0,28.5,36.3], backgroundColor:GOLD, borderRadius:3, borderWidth:2, borderColor:'#14151A' },
+      { label:'Fast-growing suburbs', data:[42.3,65.6,61.6,49.4], backgroundColor:TEAL, borderRadius:3, borderWidth:2, borderColor:'#14151A' }
+    ] },
+  options:{ responsive:true, maintainAspectRatio:false, indexAxis:'y',
+    plugins:{ legend:{display:false}, tooltip:{callbacks:{label:(c)=>c.dataset.label+': '+c.parsed.x.toFixed(1)+'%'}} },
+    scales:{ x:{ stacked:true, title:{display:true,text:'Share of moves landing there (%)'}, grid:{color:'#E4E1D6'} }, y:{ stacked:true, grid:{display:false} } }
   }
 });
 
